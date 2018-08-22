@@ -63,9 +63,17 @@ U=function(A,B,C,n, Vfunction=SWF){
 
 # for each design calculate U, given sample size N
 # maximum over these will give value function V
-UoverSimplex=function(A,B,C,N, Ufunction){
+UoverSimplex=function(A,B,C,N, 
+                      RR=NULL, #if RR is provided, consider random subsample of simplex
+                      Ufunction){ 
   k=length(A)
   nmatrix=simplex(N,k) #number of units assigned to each of k treatments, summing to N
+  
+  #subset of designs if RR is provided
+  if (!is.null(RR)){
+    rows=dim(nmatrix)[1]
+    nmatrix=nmatrix[sample(1:rows, min(RR,rows)),]
+  }
   
   USimplex=as.data.frame(nmatrix)
   Nassignments=nrow(nmatrix) #number of different treatment assignments
@@ -78,17 +86,20 @@ UoverSimplex=function(A,B,C,N, Ufunction){
 }
 
 
+
+
 # beginning of period value function V
 # maximizing over possible designs n
 # for prior A, B, , cost C
 # sample sizes NN for coming waves
-V=function(A,B,C,NN) {
+# number of draws RR if optimization is stochastic
+V=function(A,B,C,NN,RR=NULL) {
   if (length(NN)>1) {
-    Ufunction=function(A,B,C,n) U(A,B,C,n, Vfunction=function(A,B,C) V(A,B,C,NN[-1]))
+    Ufunction=function(A,B,C,n) U(A,B,C,n, Vfunction=function(A,B,C) V(A,B,C,NN[-1],R))
   } else {
     Ufunction=U
   }
   
-  USimplex=UoverSimplex(A,B,C,NN[1], Ufunction)
+  USimplex=UoverSimplex(A,B,C,NN[1],RR, Ufunction)
   max(USimplex$U) 
 }  

@@ -1,6 +1,5 @@
 rm(list = ls())
-library(tidyverse)
-library(forcats)
+
 source("calibratedSimulations.r")
 
 backcolor="azure2" #background color for plots
@@ -58,7 +57,7 @@ DataToTheta=function(filename, dataname, dbar, strataVars){
     theme(panel.background = element_rect(fill = backcolor, colour = NA)) +
     labs(title="Average outcomes by treatment and stratum",
          subtitle=dataname,
-         x="outcome", y="treatment")
+         x="mean outcome", y="treatment")
   
   ggsave(paste("../../Figures/Applications/", filename, ".pdf", sep=""), width = 5, height = 0.15*length(levels(sumstats$strata))*dbar+1.5)
 
@@ -78,12 +77,12 @@ RunCalibratedSimulations=function(){
       filename="Ashraf"
       dataname="Ashraf, Berry, and Shapiro (2010)" #,\n  \"Can Higher Prices Stimulate Product Use?  Evidence from a Field Experiment in Zambia.\""
       dbar=6 #number of treatment values
-      strataVars=c("covar1", "covar2") #variables to stratify on. we might want to do be careful about keeping track of strata meaning, though
+      strataVars=c("covar1") #, "covar2") #variables to stratify on. we might want to do be careful about keeping track of strata meaning, though
     } else if (application==2) {
       filename="Bryan"
       dataname="Bryan, Chowdhury, and Mobarak (2014)" #,\n \"Underinvestment in a Profitable Technology: The Case of Seasonal Migration in Bangladesh\""
       dbar=4
-      strataVars=c("covar1", "covar2")
+      strataVars=c("covar1") #, "covar2")
     }
     
     #produce figures and get Thetas
@@ -94,9 +93,9 @@ RunCalibratedSimulations=function(){
   }
   
   #parameters of hypothetical experiment
-  N1=12
-  N2=12
-  R=20
+  N1=36
+  N2=24
+  R=400
   DesignTable(N1,N2,ThetaList,R,columnames,"CalibratedSimulations")
   
 }

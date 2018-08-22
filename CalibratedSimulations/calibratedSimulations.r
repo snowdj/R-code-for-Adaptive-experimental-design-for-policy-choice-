@@ -1,5 +1,9 @@
 #This script implements calibrated simulations, sampling outcomes from the empirical distribution of an actual experiment.
 library(parallel)
+library(tidyverse)
+library(forcats)
+library(xtable)
+
 source("../CoreFunctions/welfareplotsFunctions.R")
 source("../CoreFunctions/welfareplotsGraphics.R")
 
@@ -65,10 +69,13 @@ Simulate2WaveDesign=function(N1,N2,C,theta){
   
   Y1=simulatedSample(D1,theta) #bernoulli draws with probability theta(D) - drawing from sample distribution
   
-  A=tapply(Y1, D1,sum) + 1 #posterior parameters, starting with Beta(1,1) (uniform) prior
-  B=tapply(1-Y1, D1,sum) + 1
+  # prior precision
+  alpha0=3
+  A=tapply(Y1, D1,sum) + alpha0 #posterior parameters, starting with Beta(alpha0,alpha0) prior
+  B=tapply(1-Y1, D1,sum) + alpha0
   
-  USimplex=UoverSimplex(A,B,C,N2, Ufunction=U)
+  RR=400 #drop this line if full optimization is desired
+  USimplex=UoverSimplex(A,B,C,N2, Ufunction=U,RR)
   noptimal=USimplex[which.max(USimplex$U), 1:k] #optimal treatment assignment in wave 2
   
   D2=unlist(sapply(1:k, function(i) rep(i,noptimal[i]))) #this seems odd way to construct D2 - revisit?
@@ -142,8 +149,16 @@ DesignTable=function(N1,N2,ThetaList,R=100,columnames=NULL, filename=NULL) {
   
   if (!is.null(filename)){
     #write_csv(RegretTable, paste("../../Figures/Applications/", filename, "RegretTable.csv", sep=""))
-    print(xtable(RegretTable, type = "latex"), 
-          file = paste("../../Figures/Applications/", filename,"_", N1,"_",N2,"_","RegretTable.tex", sep=""),
+    labtext=paste(filename,"_", N1,"_",N2,"_","RegretTable", sep="")
+    print(xtable(RegretTable, type = "latex",
+                 caption=paste("Performance of alternative experimental designs, ",
+                               "$N_1=", N1,
+                               "$, $N_2=", N2, "$, ",
+                               R, " replications"),
+                 label=paste("tab:", labtext, sep=""),
+                 digits=3), 
+          file = paste("../../Figures/Applications/", labtext,".tex", sep=""),
+          caption.placement = "top",
           include.rownames=FALSE, #to omit row numbering
           sanitize.text.function=function(x){x}) #to maintain tex strings as intended
   }
@@ -152,7 +167,9 @@ DesignTable=function(N1,N2,ThetaList,R=100,columnames=NULL, filename=NULL) {
 
 
 #List of Thetas to consider
-# ThetaList=list(c(.2,.5,.8),
-#                c(.6,.5,.4),
-#                c(.2,.4,.6,.8))
-# DesignTable(N1,N2,ThetaList,R=100,filename="Test")
+N1=12
+N2=9
+ThetaList=list(c(.2,.5,.8),
+               c(.6,.5,.4),
+               c(.2,.4,.6,.8))
+DesignTable(N1,N2,ThetaList,R=400,filename="Test")
