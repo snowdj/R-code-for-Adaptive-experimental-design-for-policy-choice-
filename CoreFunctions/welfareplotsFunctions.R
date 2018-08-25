@@ -1,3 +1,6 @@
+#number of replication draws for Uhat
+RU=400
+
 betabinomial = function(n,s,a,b) {
   #probability mass function of the beta-binomial distribution
   #n trials, s successes, beta parameters a,b
@@ -22,16 +25,28 @@ SWF= function(A, B, C){
 }
 
 #creating nmatrix that has all elements of simplex
-simplex = function(N,k){
+simplex = function(N,k,
+                   RR=NULL){  #if RR is provided, consider random subsample of simplex
   Nplus1=N+1
-  nmatrix=matrix(0, Nplus1^k, k)
-  i=1:(Nplus1^k)
-  for (j in k:1) {
-    nmatrix[,j]=i%%Nplus1
-    i=i%/%Nplus1
+  Nplus1tok=Nplus1^k
+  if (is.null(RR)){ #computationally costly version of getting full simplex
+    nmatrix=matrix(0, Nplus1tok, k)
+    i=1:(Nplus1tok)
+    for (j in k:1) {
+      nmatrix[,j]=i%%Nplus1
+      i=i%/%Nplus1
+    }
+    #keep only rows with correct rowsum
+    nmatrix[rowSums(nmatrix)==N,,drop=FALSE]
+  } else 
+  { #getting random subsample of simplex
+    nmatrix=matrix(runif(RR*k), RR, k) #sample from contiuous hypercube
+    nmatrix=t(apply(nmatrix, 1, function(x) N*x/sum(x))) #row normalize. this gives more points at center!
+    nmatrix=floor(nmatrix) #round down
+    nmatrix+  #add missing numbers to get right rowsum again
+      t(sapply(N-rowSums(floor(nmatrix)), function(dN) sample(c(rep(1, dN), rep(0, k-dN))))) 
   }
-  #keep only rows with correct rowsum
-  nmatrix[rowSums(nmatrix)==N,,drop=FALSE]
+  
 }
 
 
@@ -61,19 +76,24 @@ U=function(A,B,C,n, Vfunction=SWF){
 }
 
 
+# a simulated approximation of U
+#TBD!!!!
+Uhat=function(A,B,C,n, Vfunction=SWF){
+  k=length(A) #number of treatment arms
+  
+  
+}
+
+
+
 # for each design calculate U, given sample size N
 # maximum over these will give value function V
 UoverSimplex=function(A,B,C,N, 
                       RR=NULL, #if RR is provided, consider random subsample of simplex
                       Ufunction){ 
   k=length(A)
-  nmatrix=simplex(N,k) #number of units assigned to each of k treatments, summing to N
+  nmatrix=simplex(N,k,RR) #number of units assigned to each of k treatments, summing to N
   
-  #subset of designs if RR is provided
-  if (!is.null(RR)){
-    rows=dim(nmatrix)[1]
-    nmatrix=nmatrix[sample(1:rows, min(RR,rows)),]
-  }
   
   USimplex=as.data.frame(nmatrix)
   Nassignments=nrow(nmatrix) #number of different treatment assignments

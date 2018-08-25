@@ -3,18 +3,23 @@ rm(list = ls())
 source("../CoreFunctions/welfareplotsFunctions.R")
 source("../CoreFunctions/welfareplotsGraphics.R")
 
+backcolor="azure2" #background color for plots
+gridcolor="azure1"
+fillcolor="skyblue4"
 
 stylizedDesign=function(A,B,C, N){
-  USimplex=UoverSimplex(A,B,C,N, U)
+  USimplex=UoverSimplex(A,B,C,N,NULL, U)
   #USimplex$deltaU=USimplex$U-c(USimplex$U[1],USimplex$U[1:N])
   
   ggplot(USimplex[-1,], aes(x=n1, y=U)) +
-    geom_line(size=1, color= "skyblue4")+
+    geom_line(size=1, color= fillcolor)+
     xlab(expression(n[1])) + ylab("ESWF") +
-    scale_x_continuous(breaks = 0:N) +
+    scale_x_continuous(breaks = seq(0,N,5)) +
     theme(panel.grid.minor = element_blank(),
-          panel.background = element_rect(fill = "azure2", colour = NA),
+          panel.grid.major = element_line(colour=gridcolor),
+          panel.background = element_rect(fill = backcolor, colour = NA),
           axis.line.x = element_line(size = 0.5, colour = "black"))
+    
   
   filename=paste(c("../../Figures/ValueofInfo/ESWF_prior", A[1], B[1],"_stylized.pdf"), collapse="") 
   
@@ -60,9 +65,10 @@ powerCalc=function(theta, N){
   ggplot(powerData, aes(x=n1, y=power)) +
     geom_line(size=1, color= "skyblue4")+
     xlab(expression(n[1])) + ylab("power") +
-    scale_x_continuous(breaks = 0:N) +
+    scale_x_continuous(breaks = seq(0,N,5)) +
     theme(panel.grid.minor = element_blank(),
-          panel.background = element_rect(fill = "azure2", colour = NA),
+          panel.grid.major = element_line(colour=gridcolor),
+          panel.background = element_rect(fill = backcolor, colour = NA),
           axis.line.x = element_line(size = 0.5, colour = "black"))
   
   filename=paste(c("../../Figures/ValueofInfo/powerCalc", round(100*theta[1]),"_stylized.pdf"), collapse="") 
@@ -90,9 +96,10 @@ MSEcalc=function(theta, N){
   ggplot(powerData, aes(x=n1, y=-MSE)) +
     geom_line(size=1, color= "skyblue4")+
     xlab(expression(n[1])) + ylab("-MSE") +
-    scale_x_continuous(breaks = 0:N) +
+    scale_x_continuous(breaks = seq(0,N,5)) +
     theme(panel.grid.minor = element_blank(),
-          panel.background = element_rect(fill = "azure2", colour = NA),
+          panel.grid.major = element_line(colour=gridcolor),
+          panel.background = element_rect(fill = backcolor, colour = NA),
           axis.line.x = element_line(size = 0.5, colour = "black"))
   
   filename=paste(c("../../Figures/ValueofInfo/MSECalc", round(100*theta[1]),"_stylized.pdf"), collapse="") 

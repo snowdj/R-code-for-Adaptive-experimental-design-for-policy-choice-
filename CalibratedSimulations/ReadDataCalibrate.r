@@ -3,10 +3,11 @@ rm(list = ls())
 source("calibratedSimulations.r")
 
 backcolor="azure2" #background color for plots
+gridcolor="azure1"
 fillcolor="skyblue4"
 
 
-DataToTheta=function(filename, dataname, dbar, strataVars){
+DataToTheta=function(filename, dataname, dbar, strataVars, printFigures=FALSE){
   Data=read_csv(paste("../../Datasets/Cleaned/", filename, ".csv", sep=""))
   head(Data)
   #check for missings?
@@ -38,30 +39,36 @@ DataToTheta=function(filename, dataname, dbar, strataVars){
     group_by(strata) %>%
     summarize(n=sum(obs))
   
-  ggplot(stratasizes, aes(x=factor(strata, levels = rev(levels(strata))), y=n)) +
-    geom_col(fill=fillcolor, width=.5) + 
-    theme(panel.background = element_rect(fill = backcolor, colour = NA)) +
-    coord_flip() +
-    labs(title="Strata size",
-         subtitle=dataname,
-         x="stratum", y="number of observations")
+  if (printFigures) {
+    ggplot(stratasizes, aes(x=factor(strata, levels = rev(levels(strata))), y=n)) +
+      geom_col(fill=fillcolor, width=.5) + 
+      theme(panel.background = element_rect(fill = backcolor, colour = NA),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank()) +
+      coord_flip() +
+      labs(title="Strata size",
+           subtitle=dataname,
+           x="stratum", y="number of observations")
+    
+    ggsave(paste("../../Figures/Applications/", filename, "strata.pdf", sep=""), width = 5, height =1.5+ .2*length(levels(sumstats$strata)))
+    
+    
+    ggplot(sumstats, aes(x=meanout, y=factor(treatment,levels=c(dbar:1)))) +
+      geom_point(color=fillcolor) +
+      #scale_y_discrete(labels=paste("treatment", 1:dbar)) + 
+      facet_grid(strata~.) +
+      scale_x_continuous(limits=c(0,1)) +
+      theme(panel.background = element_rect(fill = backcolor, colour = NA),
+            panel.grid.major = element_line(colour=gridcolor),
+            panel.grid.minor = element_blank()) +
+      labs(title="Average outcomes by treatment and stratum",
+           subtitle=dataname,
+           x="mean outcome", y="treatment")
+    
+    ggsave(paste("../../Figures/Applications/", filename, ".pdf", sep=""), width = 5, height = 0.15*length(levels(sumstats$strata))*dbar+1.5)
   
-  ggsave(paste("../../Figures/Applications/", filename, "strata.pdf", sep=""), width = 5, height =1.5+ .2*length(levels(sumstats$strata)))
-  
-  
-  ggplot(sumstats, aes(x=meanout, y=factor(treatment,levels=c(dbar:1)))) +
-    geom_point(color=fillcolor) +
-    #scale_y_discrete(labels=paste("treatment", 1:dbar)) + 
-    facet_grid(strata~.) +
-    scale_x_continuous(limits=c(0,1)) +
-    theme(panel.background = element_rect(fill = backcolor, colour = NA)) +
-    labs(title="Average outcomes by treatment and stratum",
-         subtitle=dataname,
-         x="mean outcome", y="treatment")
-  
-  ggsave(paste("../../Figures/Applications/", filename, ".pdf", sep=""), width = 5, height = 0.15*length(levels(sumstats$strata))*dbar+1.5)
-
-  write_csv(sumstats, paste("../../Figures/Applications/", filename, "Sumstats.csv", sep=""))
+    write_csv(sumstats, paste("../../Figures/Applications/", filename, "Sumstats.csv", sep=""))
+  }
   
   list(theta=theta$meanout, sumstats=sumstats, stratasizes =stratasizes, key=key)
 }
@@ -93,9 +100,9 @@ RunCalibratedSimulations=function(){
   }
   
   #parameters of hypothetical experiment
-  N1=36
-  N2=24
-  R=400
+  N1=12
+  N2=9
+  R=200
   DesignTable(N1,N2,ThetaList,R,columnames,"CalibratedSimulations")
   
 }
