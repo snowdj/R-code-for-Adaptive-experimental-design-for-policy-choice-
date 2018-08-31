@@ -10,8 +10,6 @@ source("../CoreFunctions/welfareplotsGraphics.R")
 set.seed(12231983)
 # prior precision
 alpha0=3
-# how many random subpoints of simplex to consider in optimization:
-RR=400 #drop this line if full optimization is desired
 
 # Step 1: load experimental data.
 # for now: simulating data for sake of getting started.
@@ -77,7 +75,7 @@ Simulate2WaveDesign=function(N1,N2,C,theta){
   A=tapply(Y1, D1,sum) + alpha0 #posterior parameters, starting with Beta(alpha0,alpha0) prior
   B=tapply(1-Y1, D1,sum) + alpha0
 
-  USimplex=UoverSimplex(A,B,C,N2, Ufunction=U,RR)
+  USimplex=UoverSimplex(A,B,C,N2, Ufunction=U)
   noptimal=USimplex[which.max(USimplex$U), 1:k] #optimal treatment assignment in wave 2
   
   D2=as.vector(unlist(sapply(1:k, function(i) rep(i,noptimal[i])))) #this seems odd way to construct D2 - revisit?

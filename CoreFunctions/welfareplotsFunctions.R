@@ -1,6 +1,3 @@
-#number of replication draws for Uhat
-RU=400
-
 betabinomial = function(n,s,a,b) {
   #probability mass function of the beta-binomial distribution
   #n trials, s successes, beta parameters a,b
@@ -23,32 +20,6 @@ SWF= function(A, B, C){
   # C vector with cost of treatments
   max(A /(A+B) - C)
 }
-
-#creating nmatrix that has all elements of simplex
-simplex = function(N,k,
-                   RR=NULL){  #if RR is provided, consider random subsample of simplex
-  Nplus1=N+1
-  Nplus1tok=Nplus1^k
-  if (is.null(RR)){ #computationally costly version of getting full simplex
-    nmatrix=matrix(0, Nplus1tok, k)
-    i=1:(Nplus1tok)
-    for (j in k:1) {
-      nmatrix[,j]=i%%Nplus1
-      i=i%/%Nplus1
-    }
-    #keep only rows with correct rowsum
-    nmatrix[rowSums(nmatrix)==N,,drop=FALSE]
-  } else 
-  { #getting random subsample of simplex
-    nmatrix=matrix(runif(RR*k), RR, k) #sample from contiuous hypercube
-    nmatrix=t(apply(nmatrix, 1, function(x) N*x/sum(x))) #row normalize. this gives more points at center!
-    nmatrix=floor(nmatrix) #round down
-    nmatrix+  #add missing numbers to get right rowsum again
-      t(sapply(N-rowSums(floor(nmatrix)), function(dN) sample(c(rep(1, dN), rep(0, k-dN))))) 
-  }
-  
-}
-
 
 
 # beginning of period value function U
@@ -76,23 +47,11 @@ U=function(A,B,C,n, Vfunction=SWF){
 }
 
 
-# a simulated approximation of U
-#TBD!!!!
-Uhat=function(A,B,C,n, Vfunction=SWF){
-  k=length(A) #number of treatment arms
-  
-  
-}
-
-
-
 # for each design calculate U, given sample size N
 # maximum over these will give value function V
-UoverSimplex=function(A,B,C,N, 
-                      RR=NULL, #if RR is provided, consider random subsample of simplex
-                      Ufunction){ 
+UoverSimplex=function(A,B,C,N,Ufunction){ 
   k=length(A)
-  nmatrix=simplex(N,k,RR) #number of units assigned to each of k treatments, summing to N
+  nmatrix=simplex(N,k) #number of units assigned to each of k treatments, summing to N
   
   
   USimplex=as.data.frame(nmatrix)
@@ -112,14 +71,13 @@ UoverSimplex=function(A,B,C,N,
 # maximizing over possible designs n
 # for prior A, B, , cost C
 # sample sizes NN for coming waves
-# number of draws RR if optimization is stochastic
-V=function(A,B,C,NN,RR=NULL) {
+V=function(A,B,C,NN) {
   if (length(NN)>1) {
-    Ufunction=function(A,B,C,n) U(A,B,C,n, Vfunction=function(A,B,C) V(A,B,C,NN[-1],R))
+    Ufunction=function(A,B,C,n) U(A,B,C,n, Vfunction=function(A,B,C) V(A,B,C,NN[-1]))
   } else {
     Ufunction=U
   }
   
-  USimplex=UoverSimplex(A,B,C,NN[1],RR, Ufunction)
+  USimplex=UoverSimplex(A,B,C,NN[1], Ufunction)
   max(USimplex$U) 
 }  

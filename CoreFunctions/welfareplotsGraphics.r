@@ -4,6 +4,8 @@ library(ggthemes)
 backcolor="azure2" #background color for plots
 
 PlotSimplex=function(A,B,C,N){
+  # can choose Uhat or U for Ufunction. If Uhat, need to Seed.
+  # Seed(A,B)
   USimplex=UoverSimplex(A,B,C,N, U)
   
   Uround=signif(USimplex$U+.0000001,digits=4)
@@ -29,6 +31,8 @@ PlotSimplex=function(A,B,C,N){
 
 
 PlotSimplexAlternative=function(A,B,C,N){
+  # can choose Uhat or U for Ufunction. If Uhat, need to Seed.
+  # Seed(A,B)
   USimplex=UoverSimplex(A,B,C,N, U)
   
   Uround=signif(USimplex$U+.0000001,digits=4)
@@ -83,7 +87,7 @@ SimplexPanel=function(N, alternativeplot=FALSE){
       PlotSimplexAlternative(AM[i,],BM[i,],C,N)
       filename=paste(c("../../Figures/SimplexTriangle/ESWF_prior", AM[i,],"sample", N ,"Alternative.pdf"), collapse="")          
     }
-    ggsave(filename, width = 5, height = 4)
+    #ggsave(filename, width = 5, height = 4)
   }
   
 }

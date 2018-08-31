@@ -2,7 +2,7 @@ rm(list = ls())
 #setwd(dirname(parent.frame(2)$ofile))
 source("welfareplotsFunctions.R")
 source("welfareplotsGraphics.R")
-
+source("SimulatedFunctions.R")
 
 for (N in c(3,4,6,10)) {
   SimplexPanel(N, alternativeplot=TRUE)
