@@ -43,7 +43,7 @@ PlotSimplexAlternative=function(A,B,C,N){
                           n2=c(-.5, N+1, -.5))
   
   ggplot(USimplex, aes(x=n1+sqrt(.25)*n2, y=sqrt(.75)*n2)) +
-    geom_point(aes(color = U), size=sqrt(700/N))  + 
+    geom_point(aes(color = U), size=1.3*sqrt(700/N))  + 
     scale_color_gradient( low = "skyblue4", high = "white") +
     geom_text(aes(label=format(U+.0000001, digits=3), #note addition of small number is to generate consistent rounding
                   fontface=fontf),

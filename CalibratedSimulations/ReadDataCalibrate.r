@@ -100,8 +100,8 @@ RunCalibratedSimulations=function(){
   }
   
   #parameters of hypothetical experiment
-  N1=12
-  N2=9
+  N1=24
+  N2=12
   R=200
   DesignTable(N1,N2,ThetaList,R,columnames,"CalibratedSimulations")
   

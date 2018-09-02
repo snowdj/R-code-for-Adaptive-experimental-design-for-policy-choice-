@@ -4,7 +4,7 @@
 library(shiny)
 rm(list = ls())
 source("welfareplotsFunctions.R")
-source("welfareplotsFunctions.r")
+source("welfareplotsGraphics.r")
 
 
 
@@ -69,7 +69,7 @@ server <- function(input, output, session) {
       A=c(input$s1,input$s2,input$s3) + rep(1,3)
       B=c(input$n1,input$n2,input$n3) - c(input$s1,input$s2,input$s3) + rep(1,3)
       C=rep(0,3)
-      PlotSimplex(A,B,C,input$N)
+      PlotSimplexAlternative(A,B,C,input$N)
   })
   
   # output$benchmark = renderText({ 

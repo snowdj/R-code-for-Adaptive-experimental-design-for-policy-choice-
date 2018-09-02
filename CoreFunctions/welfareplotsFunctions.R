@@ -10,9 +10,17 @@ betabinomialvector = function(N,S,A,B) {
   #wrapper for betabinomial:
   #calculating betabinomial probability, product across components
   k=length(N)
+  #faster version of the following line?
   prod(sapply(1:k, function(j) betabinomial(N[j],S[j],A[j],B[j])))
 }
 
+
+#requires global variable alpha0 specifying prior precision
+betaposterior=function(D,Y){
+  A=tapply(Y, D,sum) + alpha0 #posterior parameters, starting with Beta(alpha0,alpha0) (uniform) prior
+  B=tapply(1-Y, D,sum) + alpha0
+  list(A=A,B=B, theta= A /(A+B))
+}
 
 SWF= function(A, B, C){
   #social welfare function for expected average outcome of optimal treatment
@@ -20,6 +28,41 @@ SWF= function(A, B, C){
   # C vector with cost of treatments
   max(A /(A+B) - C)
 }
+
+
+PolicyChoice=function(A,B,C){
+  # policy choice maximizing expected average outcome of optimal treatment
+  # A,B vectors with a, b parameters of beta distribution
+  # C vector with cost of treatments
+  which.max(A /(A+B) - C)
+}
+
+
+
+Regret=function(D, #vector of treatments across all waves
+                Y, #vector of outcomes across all waves
+                C, #treatment cost vector
+                theta #true parameter vector
+)
+{
+  k=max(D) #number of treatment arms, assuming we start at 1
+  posterior=betaposterior(D,Y)
+  d=PolicyChoice(posterior$A,posterior$B,C) # policy chosen given experimental data
+  regret=max(theta-C)-theta[d]+C[d] # regret - difference in welfare between chosen and optimal option
+  c(regret, d)
+}
+
+
+#dividing N units equally (up to rounding) between k treatments  
+EqualAssignment=function(N,k){
+  floor((1:N-1)*k/N)+1
+}
+
+#D vector based on vector n of assigned units
+GivenAssignment=function(n,k){
+  D2=as.vector(unlist(sapply(1:k, function(i) rep(i,n[i])))) 
+}
+
 
 
 # beginning of period value function U
@@ -49,9 +92,14 @@ U=function(A,B,C,n, Vfunction=SWF){
 
 # for each design calculate U, given sample size N
 # maximum over these will give value function V
-UoverSimplex=function(A,B,C,N,Ufunction){ 
+UoverSimplex=function(A,B,C,N,
+                      Ufunction=U, #how to estimate expected welfare (U or Uhat or Vfunction...)
+                      coverage="full"){  #what assignments to try
   k=length(A)
-  nmatrix=simplex(N,k) #number of units assigned to each of k treatments, summing to N
+   
+  #number of units assigned to each of k treatments, summing to N
+  # depending on value of coverage, do full, random, or handpicked
+  nmatrix=simplex(N,k, coverage, RR=400, thetahat=A/(A+B)) 
   
   
   USimplex=as.data.frame(nmatrix)
@@ -81,3 +129,49 @@ V=function(A,B,C,NN) {
   USimplex=UoverSimplex(A,B,C,NN[1], Ufunction)
   max(USimplex$U) 
 }  
+
+
+
+# alternative ways to pick last-wave design
+D2choice=function(A,B,C,N2, method="optimal"){
+  k=length(A)
+  if (method=="optimal") {
+    # find the assignment maximizing expected welfare
+    USimplex=UoverSimplex(A,B,C,N2, Ufunction=U, coverage="full")
+    n2=USimplex[which.max(USimplex$U), 1:k]
+    D2=GivenAssignment(n2,k)
+  } else if (method == "optimalhat") {
+    # find the assignment maximizing simulated expected welfare
+    Seed(A,B, N2)
+    USimplex=UoverSimplex(A,B,C,N2, Ufunction=Uhat)
+    n2=USimplex[which.max(USimplex$U), 1:k]
+    D2=GivenAssignment(n2,k)
+  } else if (method == "optimalrandom"){
+    USimplex=UoverSimplex(A,B,C,N2, Ufunction=U, coverage="random")
+    n2=USimplex[which.max(USimplex$U), 1:k]
+    D2=GivenAssignment(n2,k)
+  } else if (method == "optimalhandpicked"){
+    USimplex=UoverSimplex(A,B,C,N2, Ufunction=U, coverage="handpicked")
+    n2=USimplex[which.max(USimplex$U), 1:k]
+    D2=GivenAssignment(n2,k)    
+  } else if (method == "besthalf"){
+    # find the assignment which implements the better half of treatments with equal shares
+    k=length(A)
+    thetahat=A/(A+B)
+    #get ordered list of treatments, starting with the highest
+    bestoptions=order(thetahat,decreasing=TRUE)
+    k2=ceiling(k/2) #consider half the options in second round. maybe do something more sophisticated here?
+    #start with n2 vector as if options were ordered, then reorder afterwards
+    n2=c(rep(floor(N2/k2),k2), rep(0,k-k2))
+    n2[seq_len(N2-sum(n2))]=n2[1:(N2-sum(n2))]+1
+    n2[bestoptions]=n2
+    D2=GivenAssignment(n2,k)
+  } else if (method=="thompson") {
+    # assign treatment in proportion to probability of being best
+    k=length(A)
+    thetadraws=sapply(1:k, function(j) rbeta(N2, A[j], B[j]))
+    D2=sapply(1:N2, function(j) which.max(thetadraws[j,]))
+  }
+  
+  D2
+}
