@@ -6,13 +6,11 @@ betabinomial = function(n,s,a,b) {
         lbeta((a + s),(b + n - s)) - lbeta(a,b)) 
 }
 
-betabinomialvector = function(N,S,A,B) {
-  #wrapper for betabinomial:
-  #calculating betabinomial probability, product across components
-  k=length(N)
-  #faster version of the following line?
-  prod(sapply(1:k, function(j) betabinomial(N[j],S[j],A[j],B[j])))
-}
+# betabinomialvector = function(N,S,A,B) {
+#   #wrapper for betabinomial:
+#   #calculating betabinomial probability, product across components
+#   prod(mapply(betabinomial, N,S,A,B))
+# }
 
 
 #requires global variable alpha0 specifying prior precision
@@ -70,6 +68,7 @@ GivenAssignment=function(n,k){
 # for prior A, B, , cost C, end of period value function Vfunction
 U=function(A,B,C,n, Vfunction=SWF){
   k=length(A) #number of treatment arms
+  
   #possible success vectors
   nplus1=n+1;
   N=prod(nplus1)
@@ -80,8 +79,11 @@ U=function(A,B,C,n, Vfunction=SWF){
     i=i%/%nplus1[j]
   }
   
+  pp=sapply(1:k, function(j) betabinomial(n[j],0:n[j], A[j], B[j]))
+  ppp=sapply(1:k, function(j) pp[[j]][SM[,j] + 1])
   #probability of each combination of successes
-  p=sapply(1:N, function(ii) betabinomialvector(n,SM[ii,],A,B))
+  p=apply(ppp,1,prod)
+
   #posterior expected social welfare for each combination of successes
   SW=sapply(1:N, function(ii) Vfunction(A+SM[ii,] ,B+n-SM[ii,] ,C))
   
@@ -171,6 +173,17 @@ D2choice=function(A,B,C,N2, method="optimal"){
     k=length(A)
     thetadraws=sapply(1:k, function(j) rbeta(N2, A[j], B[j]))
     D2=sapply(1:N2, function(j) which.max(thetadraws[j,]))
+  } else if (method=="modifiedthompson") {
+    # assign treatment in proportion to probability of being best
+    # but don't allow same treatment two times in a row
+    k=length(A)
+    D2=rep(0,N2)
+    D2[1]=which.max(sapply(1:k, function(j) rbeta(1, A[j], B[j])))
+    i=2
+    while (i<=N2) {
+      D2[i]=which.max(sapply(1:k, function(j) rbeta(1, A[j], B[j])))
+      if (D2[i] !=D2[i-1]) {i=i+1}
+    }
   }
   
   D2
