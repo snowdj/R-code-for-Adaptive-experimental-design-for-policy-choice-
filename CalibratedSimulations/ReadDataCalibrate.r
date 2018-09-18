@@ -16,7 +16,7 @@ DataToTheta=function(filename, dataname, dbar, strataVars, printFigures=FALSE){
   
   Data=Data %>%
     mutate(treatment=factor(as.matrix(Data[treatDummies])%*%(1:dbar))) %>%
-    mutate(Strata=(interaction(select(.,strataVars)))) #this is useful for renaming levels but introduces randomness...
+    mutate(Strata=(interaction(select(.,strataVars))))
   
   #recoding the levels in a reproducible way    
   oldlevels=levels(Data$Strata)  

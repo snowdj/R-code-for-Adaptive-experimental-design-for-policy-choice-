@@ -58,7 +58,7 @@ EqualAssignment=function(N,k){
 
 #D vector based on vector n of assigned units
 GivenAssignment=function(n,k){
-  D2=as.vector(unlist(sapply(1:k, function(i) rep(i,n[i])))) 
+  Dt=as.vector(unlist(sapply(1:k, function(i) rep(i,n[i])))) 
 }
 
 
@@ -135,27 +135,27 @@ V=function(A,B,C,NN) {
 
 
 # alternative ways to pick last-wave design
-D2choice=function(A,B,C,N2, method="optimal"){
+Dtchoice=function(A,B,C,Nt, method="optimal"){
   k=length(A)
   if (method=="optimal") {
     # find the assignment maximizing expected welfare
-    USimplex=UoverSimplex(A,B,C,N2, Ufunction=U, coverage="full")
-    n2=USimplex[which.max(USimplex$U), 1:k]
-    D2=GivenAssignment(n2,k)
+    USimplex=UoverSimplex(A,B,C,Nt, Ufunction=U, coverage="full")
+    nt=USimplex[which.max(USimplex$U), 1:k]
+    Dt=GivenAssignment(nt,k)
   } else if (method == "optimalhat") {
     # find the assignment maximizing simulated expected welfare
-    Seed(A,B, N2)
-    USimplex=UoverSimplex(A,B,C,N2, Ufunction=Uhat)
-    n2=USimplex[which.max(USimplex$U), 1:k]
-    D2=GivenAssignment(n2,k)
+    Seed(A,B, Nt)
+    USimplex=UoverSimplex(A,B,C,Nt, Ufunction=Uhat)
+    nt=USimplex[which.max(USimplex$U), 1:k]
+    Dt=GivenAssignment(nt,k)
   } else if (method == "optimalrandom"){
-    USimplex=UoverSimplex(A,B,C,N2, Ufunction=U, coverage="random")
-    n2=USimplex[which.max(USimplex$U), 1:k]
-    D2=GivenAssignment(n2,k)
+    USimplex=UoverSimplex(A,B,C,Nt, Ufunction=U, coverage="random")
+    nt=USimplex[which.max(USimplex$U), 1:k]
+    Dt=GivenAssignment(nt,k)
   } else if (method == "optimalhandpicked"){
-    USimplex=UoverSimplex(A,B,C,N2, Ufunction=U, coverage="handpicked")
-    n2=USimplex[which.max(USimplex$U), 1:k]
-    D2=GivenAssignment(n2,k)    
+    USimplex=UoverSimplex(A,B,C,Nt, Ufunction=U, coverage="handpicked")
+    nt=USimplex[which.max(USimplex$U), 1:k]
+    Dt=GivenAssignment(nt,k)    
   } else if (method == "besthalf"){
     # find the assignment which implements the better half of treatments with equal shares
     k=length(A)
@@ -163,28 +163,28 @@ D2choice=function(A,B,C,N2, method="optimal"){
     #get ordered list of treatments, starting with the highest
     bestoptions=order(thetahat,decreasing=TRUE)
     k2=ceiling(k/2) #consider half the options in second round. maybe do something more sophisticated here?
-    #start with n2 vector as if options were ordered, then reorder afterwards
-    n2=c(rep(floor(N2/k2),k2), rep(0,k-k2))
-    n2[seq_len(N2-sum(n2))]=n2[1:(N2-sum(n2))]+1
-    n2[bestoptions]=n2
-    D2=GivenAssignment(n2,k)
+    #start with nt vector as if options were ordered, then reorder afterwards
+    nt=c(rep(floor(Nt/k2),k2), rep(0,k-k2))
+    nt[seq_len(Nt-sum(nt))]=nt[1:(Nt-sum(nt))]+1
+    nt[bestoptions]=nt
+    Dt=GivenAssignment(nt,k)
   } else if (method=="thompson") {
     # assign treatment in proportion to probability of being best
     k=length(A)
-    thetadraws=sapply(1:k, function(j) rbeta(N2, A[j], B[j]))
-    D2=sapply(1:N2, function(j) which.max(thetadraws[j,]))
+    thetadraws=sapply(1:k, function(j) rbeta(Nt, A[j], B[j]))
+    Dt=sapply(1:Nt, function(j) which.max(thetadraws[j,]))
   } else if (method=="modifiedthompson") {
     # assign treatment in proportion to probability of being best
     # but don't allow same treatment two times in a row
     k=length(A)
-    D2=rep(0,N2)
-    D2[1]=which.max(sapply(1:k, function(j) rbeta(1, A[j], B[j])))
+    Dt=rep(0,Nt)
+    Dt[1]=which.max(sapply(1:k, function(j) rbeta(1, A[j], B[j])))
     i=2
-    while (i<=N2) {
-      D2[i]=which.max(sapply(1:k, function(j) rbeta(1, A[j], B[j])))
-      if (D2[i] !=D2[i-1]) {i=i+1}
+    while (i<=Nt) {
+      Dt[i]=which.max(sapply(1:k, function(j) rbeta(1, A[j], B[j])))
+      if (Dt[i] !=Dt[i-1]) {i=i+1}
     }
   }
   
-  D2
+  Dt
 }

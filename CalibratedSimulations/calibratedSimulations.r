@@ -12,42 +12,11 @@ set.seed(12231983)
 # prior precision
 alpha0=1
 
-# # Step 1: load experimental data.
-# # for now: simulating data for sake of getting started.
-# # include covariates later
-# 
-# loadPseudoData=function(n=100, #number of observations
-#                         k=3 #number of treatments
-#                         )
-# {
-#     theta=runif(k) #true average potential outcomes
-#     
-#     D=sample(1:k, n, replace=TRUE) #random treatment assignment
-#     Y=simulatedSample(D,theta) #bernoulli draws with probability theta(D)
-#     thetaSample=tapply(Y, D,mean) #sample mean outcomes - this is our pseudo-true reference parameter
-#     
-#     list(D=D, Y=Y, thetaSample=thetaSample)
-# }
 
 
 
-# Simulate2WaveDesign=function(N1,N2,C,theta, method="optimal"){
-#   k=length(theta) #number of treatment arms
-#   
-#   D1=EqualAssignment(N1,k)
-#   Y1=simulatedSample(D1,theta) #bernoulli draws with probability theta(D) - drawing from sample distribution
-#   
-#   posterior=betaposterior(D1,Y1)
-# 
-#   D2=D2choice(posterior$A,posterior$B,C, N2, method)
-# 
-#   Y2=simulatedSample(D2,theta) #bernoulli draws with probability theta(D) - drawing from sample distribution
-#   
-#   Regret(c(D1,D2),c(Y1,Y2),C,theta)
-# }
 
-
-
+#TBC here!!!
 SimulateTWaveDesign=function(NN,C,theta, method="modifiedthompson"){
   k=length(theta) #number of treatment arms
   theta=sample(theta) #randomly permute so as not to privilege any options in policy choice
@@ -64,7 +33,7 @@ SimulateTWaveDesign=function(NN,C,theta, method="modifiedthompson"){
   
   for (t in 2:T) {
     posterior=betaposterior(D[1:MM[t-1]],Y[1:MM[t-1]])
-    Dt=D2choice(posterior$A,posterior$B,C, NN[t], method)
+    Dt=Dtchoice(posterior$A,posterior$B,C, NN[t], method)
     D[(MM[t-1]+1):MM[t]]=Dt
     Y[(MM[t-1]+1):MM[t]]=simulatedSample(Dt,theta) #bernoulli draws with probability theta(D) - drawing from sample distribution
   }
@@ -119,7 +88,7 @@ ExpectedRegret=function(NN,C,theta,R, filename=NULL){
                  "rule of thumb",
                  "Thompson",
                  "modified Thompson")
-  for (i in c(5,6,7,1)) { #pick here which methods to simulate
+  for (i in c(5,6,7)) { #pick here which methods to simulate
     #browser()
     regret2Wave=parSapply(clust, 1:R, function(j) SimulateTWaveDesign(NN,C,theta, twoWaveMethods[i]))
     regretFrame=rbind(regretFrame,
@@ -209,8 +178,8 @@ DesignTable=function(NN,ThetaList,R=100,columnames=NULL, filename=NULL) {
 
 
 #another list
-NN=rep(36,2)
-ThetaList=list(seq(.5,length=6, by=.05),
-               c(.6, .59, .36, .35))
-columnames=c("like Ashraf", "like Bryan")
-DesignTable(NN,ThetaList,R,columnames,filename="almostEmpirical")
+# NN=rep(12,10)
+# ThetaList=list(seq(.5,length=6, by=.05),
+#                c(.6, .59, .36, .35))
+# columnames=c("like Ashraf", "like Bryan")
+# DesignTable(NN,ThetaList,R,columnames,filename="almostEmpirical")
