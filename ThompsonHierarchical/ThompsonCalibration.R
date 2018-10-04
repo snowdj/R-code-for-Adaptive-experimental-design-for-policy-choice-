@@ -2,15 +2,57 @@
 library(tidyverse)
 source("ThompsonHierarchical.R")
 
-DataToThetaCovariates=function(filename, dataname, dbar, strataVars){
+
+ 
+SimulateTWaveDesignThompson=function(Nt,C,theta, PX){
+    k=length(C) #number of treatment arms
+    nx = length(PX)
+    
+    T=length(Nt) #number of waves
+    MM=cumsum(Nt)
+    
+    #X=SimulateX(PX,MM[T])  #random sampling from distribution PX
+    X=1:MM[T] %% nx + 1 #making life easier by "stratified sampling" from X
+    
+    D=rep(0,MM[T])
+    Y=rep(0,MM[T])
+    
+    Dt=StratifiedAssignment(X[1:Nt[1]], k, nx)
+    Xt=X[1:Nt[1]]
+    D[1:Nt[1]]=Dt
+    Y[1:Nt[1]]=SimulateY(theta, Dt, Xt)
+    
+    for (t in seq(2, length=max(0,T-1))) {
+        previous=1:MM[t-1]
+        current=(MM[t-1]+1):MM[t]
+        Dt=DtchoiceThompsonHierarchical(Y[previous], D[previous], X[previous],
+                                        k,nx, X[current])
+        D[current]=Dt
+        Y[current]=SimulateY(theta, Dt, X[current]) 
+    }
+    
+    thetahat=hierarchicalPosteriorMean(Y,D,X)
+    
+    #careful here - giving priority to lower indices...
+    Dstar=apply(thetahat,2, which.max)
+    
+    regretX=apply(theta,2, max) - theta[cbind(Dstar, 1:nx)]
+    
+    list(X=X, D=D, Y=Y, thetahat=thetahat, Dstar=Dstar, regretX=regretX)
+}
+
+
+
+
+DataToThetaCovariates=function(filename, dataname, k, strataVars){
     Data=read_csv(paste("../../Datasets/Cleaned/", filename, ".csv", sep=""))
     head(Data)
     #check for missings?
     
-    treatDummies=paste("treatment",1:dbar, sep="") #names of treatment variables
+    treatDummies=paste("treatment",1:k, sep="") #names of treatment variables
     
     Data=Data %>%
-        mutate(treatment=factor(as.matrix(Data[treatDummies])%*%(1:dbar))) %>%
+        mutate(treatment=factor(as.matrix(Data[treatDummies])%*%(1:k))) %>%
         mutate(Strata=(interaction(select(.,strataVars)))) 
     
     #recoding the levels in a reproducible way    
@@ -33,7 +75,7 @@ DataToThetaCovariates=function(filename, dataname, dbar, strataVars){
     stratasizes = sumstats %>%
         group_by(strata) %>%
         summarize(n=sum(obs))
- 
+    
     # converting to wide matrices of successes and trials, dropping NA strata
     nstrata=nrow(key)
     
@@ -58,7 +100,7 @@ DataToThetaCovariates=function(filename, dataname, dbar, strataVars){
     
     PX=NX/sum(NX)
     
-    list(SS=SS, NN=NN, PX=PX)
+    list(SS=SS, NN=NN, PX=PX, k=k)
 }
 
 
@@ -75,24 +117,21 @@ ReadAllDataThompson=function(){
         if (application==1){
             filename="Ashraf"
             dataname="Ashraf, Berry, and Shapiro (2010)" #,\n  \"Can Higher Prices Stimulate Product Use?  Evidence from a Field Experiment in Zambia.\""
-            dbar=6 #number of treatment values
+            k=6 #number of treatment values
             strataVars=c("covar1") #, "covar2") #variables to stratify on. we might want to do be careful about keeping track of strata meaning, though
         } else if (application==2) {
             filename="Bryan"
             dataname="Bryan, Chowdhury, and Mobarak (2014)" #,\n \"Underinvestment in a Profitable Technology: The Case of Seasonal Migration in Bangladesh\""
-            dbar=4
+            k=4
             strataVars=c("covar1") #, "covar2")
         }
         
         #produce figures and get Thetas
-        DataList[[application]]=DataToThetaCovariates(filename, dataname, dbar, strataVars)
+        DataList[[application]]=DataToThetaCovariates(filename, dataname, k, strataVars)
         columnames[[application]]=filename
     }
     
-    # #parameters of hypothetical experiment
-    # NN=rep(24,12)
-    # R=4000
-    # DesignTable(NN,ThetaList,R,columnames,"Applications/CalibratedSimulations")
+
     DataList
 }
 
@@ -100,38 +139,43 @@ ReadAllDataThompson=function(){
 
 
 
-#TBC here!!!
-SimulateTWaveDesignThompson=function(NN,C,theta, PX){
-    k=length(C) #number of treatment arms
+
+RunAllSimulationsThompson=function(T = 4, #number of waves
+                                   nt = 36, #units per wave
+                                   RR = 1000){ #number of replications for simulation
+    DataList=ReadAllDataThompson()
+    print(DataList)
     
-    T=length(NN) #number of waves
-    MM=cumsum(NN)
+    simRegret=matrix(0,2,2) #columns for applications, rows for methods
     
-    X=SimulateX(PX,MM[T])
-    D=rep(0,MM[T])
-    Y=rep(0,MM[T])
-    
-    Dt=EqualAssignment(NN[1],k) #Do we really want to start like this? better to stratify!
-    D[1:NN[1]]=Dt
-    Y[1:NN[1]]=simulatedSample(Dt,theta) #bernoulli draws with probability theta(D) - drawing from sample distribution
-    
-    for (t in 2:T) {
-        posterior=betaposterior(D[1:MM[t-1]],Y[1:MM[t-1]])
-        Dt=Dtchoice(posterior$A,posterior$B,C, NN[t], method)
-        D[(MM[t-1]+1):MM[t]]=Dt
-        Y[(MM[t-1]+1):MM[t]]=simulatedSample(Dt,theta) #bernoulli draws with probability theta(D) - drawing from sample distribution
+    for (application in 1:2){
+        theta=DataList[[application]]$SS / DataList[[application]]$NN
+        PX=DataList[[application]]$PX
+        #note: need enough units to observe each treatment/covariate combo in first round, for MLE
+
+        C=rep(0,DataList[[application]]$k)
+        
+        for (r in 1:RR) {
+            #note 2: permute theta rows for fair comparisons
+            
+            # Thompson design
+            simDesign=SimulateTWaveDesignThompson(Nt = rep(nt,T),C,theta, PX)
+            # 1 wave comparison with the same number of units. stratified assignment.
+            simDesign1wave=SimulateTWaveDesignThompson(Nt = nt * T,C,theta, PX)
+            
+            simRegret[1,application] = simRegret[1,application] +  simDesign$regretX %*% PX
+            simRegret[2,application] = simRegret[2,application] +  simDesign1wave$regretX %*% PX
+            
+        }    
     }
-    Regret(D,Y,C,theta)
+    simRegret=simRegret / RR
+    print(simRegret)
+    ## TBD: formatting, design choices, further comparisons?
 }
 
+ 
+RunAllSimulationsThompson(RR=50)
 
-
-
-DataList=ReadAllDataThompson()
-print(DataList)
-
-
-
-
-
+#modify this to get repeated draws, and adjust X distribution / weighting of regret
+# include stratified equalsplit as comparison, and fully random assignment.
 

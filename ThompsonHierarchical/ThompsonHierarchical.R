@@ -31,6 +31,9 @@ hierarchicalPosteriorDraw = function(NN,SS,
     AB=matrix(0,k,2)
     f=rep(0,k)
     
+    # could add option to the following, to simply take MLE instead of posterior draw for hyperparameter?
+    # => TBD: add empirical Bayes option to function!
+    
     for (d in 1:k) { #loop over treatment values
         crit=-1
         while (crit<0) { #rejection sampling from the hyper-posterior
@@ -45,6 +48,37 @@ hierarchicalPosteriorDraw = function(NN,SS,
 
     list(theta=matrix(mapply(rbeta, 1,  SS+AB[,1], NN-SS + AB[,2]),k,nx), #draws from conditional beta posterior
          A=AB[,1], B=AB[,2], f=f)
+}
+
+
+# like posterior draw, but for posterior expectation of theta
+hierarchicalPosteriorMean = function(Y,D,X,
+                                     draws=1000) { #Monte Carlo draws to average
+    SS=tapply(Y,list(D,X),sum) #matrix of successes
+    NN=tapply(Y,list(D,X),length) #matrix of trials
+    LLH=betabinomialMLE(NN,SS)$LLH
+    
+    k=dim(NN)[1]
+    nx=dim(NN)[2]
+    thetasum=matrix(0, k, nx)
+    AB=matrix(0,k,2)
+    f=rep(0,k)
+    
+    for (i in 1:draws){ 
+        for (d in 1:k) { #loop over treatment values
+            crit=-1
+            while (crit<0) { #rejection sampling from the hyper-posterior
+                nn=rchisq(1,3) #chi squared prior for precision
+                mn=runif(1) #uniform prior for mean
+                ab=c(mn*nn, (1-mn)*nn)
+                f[d]=sum(mapply(lbeta, SS[d,]+ab[1], NN[d,]-SS[d,] + ab[2])) -  k* lbeta(ab[1], ab[2])  #negative of betabinomial log likelihood, up to constant
+                crit= f[d]-LLH[d]- log(runif(1))
+            }
+            AB[d,]=ab
+        }
+        thetasum=thetasum + (SS+AB[,1]) / (NN + AB[,1] + AB[,2])
+    }
+    thetasum / draws
 }
 
 
@@ -78,61 +112,70 @@ DtchoiceThompsonHierarchical=function(Y,D,X, #outcomes, treatments, and covariat
 
 
 
-SimulateY=function(theta, D, X, N){
+SimulateY=function(theta, D, X){
+    N=length(X)
     thetaDX=mapply(function(d,x) theta[d,x], D,X)
     Y=runif(N)<thetaDX    
 }
 
 SimulateX=function(PX,N){
-    apply(rmultinom(N,1,PX),2, which.max) #probably not the most efficient way to do this...
-}
-
-#dividing N units equally (up to rounding) between k treatments  
-EqualAssignment=function(N,k){
-    floor((1:N-1)*k/N)+1
+  nx=length(PX)
+  sample(x = 1:nx, N, replace = TRUE, prob = PX) 
 }
 
 
 
-
-debug = function(){
-  # simulate Y, D, X based on theta matrix
-  N=1000
-  k=3
-  nx=5
-  theta=matrix(runif(k*nx),k,nx)
-  print("theta:")
-  print(theta)
-
-  D=sample(k,N,replace=TRUE)
-  X=sample(nx,N,replace=TRUE)
-  Y=SimulateY(theta, D, X, N)
-
-  # test whether MLE works as intended
-  SS=tapply(Y,list(D,X),sum) #matrix of successes
-  NN=tapply(Y,list(D,X),length) #matrix of trials
-  print("share successes:")
-  print(SS/NN)
-
-  MLE=betabinomialMLE(NN,SS)
-  print("hyper parameter MLEs: ")
-  print(MLE$AB)
-
-  # test whether thetadraw works as intended
-  thetadraw=hierarchicalPosteriorDraw(NN,SS,MLE$LLH)$theta
-  print("posterior draw estimation error: ")
-  print(theta-thetadraw)
-
-  # test whether DtchoiceThompsonHierarchical works as intended
-  Dt=DtchoiceThompsonHierarchical(Y,D,X,
-                               k,nx, #number of treatments and number of strata
-                               SimulateX(rep(1/nx,nx), 24))
-  print("Thompson assignment:")
-  print(Dt)
-
+#divide units for each value of X equally across treatments
+StratifiedAssignment=function(X,k,nx){
+  N=length(X)
+  D=rep(0,N)
+  nextD=sample(1:k,nx, replace = TRUE) #random starting values in each stratum
+  for (i in 1:N) {
+    D[i]=nextD[X[i]]
+    nextD[X[i]]= (nextD[X[i]] %% k ) + 1 #rotating through treatment values
+  }
+  D
 }
 
-debug()
+
+# debug = function(){
+#   # simulate Y, D, X based on theta matrix
+#   N=1000
+#   k=3
+#   nx=5
+#   theta=matrix(runif(k*nx),k,nx)
+#   print("theta:")
+#   print(theta)
+# 
+#   D=sample(k,N,replace=TRUE)
+#   X=sample(nx,N,replace=TRUE)
+#   Y=SimulateY(theta, D, X)
+# 
+#   # test whether MLE works as intended
+#   SS=tapply(Y,list(D,X),sum) #matrix of successes
+#   NN=tapply(Y,list(D,X),length) #matrix of trials
+#   print("share successes:")
+#   print(SS/NN)
+# 
+#   MLE=betabinomialMLE(NN,SS)
+#   print("hyper parameter MLEs: ")
+#   print(MLE$AB)
+# 
+#   # test whether thetadraw works as intended
+#   thetadraw=hierarchicalPosteriorDraw(NN,SS,MLE$LLH)$theta
+#   print("posterior draw estimation error: ")
+#   print(theta-thetadraw)
+# 
+#   # test whether DtchoiceThompsonHierarchical works as intended
+#   Dt=DtchoiceThompsonHierarchical(Y,D,X,
+#                                k,nx, #number of treatments and number of strata
+#                                SimulateX(rep(1/nx,nx), 24))
+#   print("Thompson assignment:")
+#   print(Dt)
+# 
+# }
+
+#debug()
 
 
 
