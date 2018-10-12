@@ -32,6 +32,8 @@ ui <- fluidPage(
       width=6,
       includeMarkdown("instructions.md"),
       hr(),
+      tableOutput("treatmentcounts"),
+      hr(),
       tableOutput("designtable")
     )
   )  
@@ -61,12 +63,19 @@ server <- function(input, output, session) {
     v$newwave =rename(newwave,
                        stratum =Xt,
                        treatment=Dstar)
+    
+    v$treatmentcounts=    v$newwave %>%
+      group_by(stratum, treatment) %>%
+      summarise(count=n())
   })
   
   output$designtable =  renderTable({
     v$newwave
    })
   
+  output$treatmentcounts =  renderTable({
+    v$treatmentcounts
+  })
  
 #download optimal design
   output$downloadData <- downloadHandler(
