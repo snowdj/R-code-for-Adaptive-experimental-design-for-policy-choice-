@@ -110,6 +110,31 @@ DtchoiceThompsonHierarchical=function(Y,D,X, #outcomes, treatments, and covariat
 }
 
 
+DtchoiceThompson=function(Y,D, #outcomes and treatments thus far
+                          k, #number of treatments and number of strata
+                          Nt){ # number of observations for period t
+  
+  SS=tapply(Y,D,sum) #vector of successes
+  NN=tapply(Y,D,length) #vector of trials
+  A=1+SS
+  B=1+NN-SS
+  
+  Dt=rep(0,Nt)
+  previousD=-Inf # auxiliary variable to avoid repeat assignments of same D
+  
+  for (i  in 1:Nt) {
+    thetadraw=sapply(1:k, function(j) rbeta(1, A[j], B[j]))
+    Dt[i]=which.max(thetadraw)
+    if (Dt[i] == previousD) {
+      thetadraw[Dt] = -Inf
+      Dt[i]=which.max(thetadraw)
+    }
+    previousD = Dt[i]
+  }
+  
+  Dt
+}
+
 
 
 SimulateY=function(theta, D, X){

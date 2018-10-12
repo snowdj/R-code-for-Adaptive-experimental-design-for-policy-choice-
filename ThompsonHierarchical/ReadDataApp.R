@@ -7,6 +7,8 @@ ReadDataApp=function(filepath,
   Data=read_csv(filepath)
   varnames=names(Data)
   
+  Data %<>% drop_na #drop rows with missing entries
+  
   #extract number of treatments, number of covariates
   k=0
   while (paste("treatment",k+1, sep="") %in% varnames ) {
@@ -18,18 +20,18 @@ ReadDataApp=function(filepath,
   }
   
   treatDummies=paste("treatment",1:k, sep="") #names of treatment variables
-  strataVars=paste("covar",1:ncovs, sep="") #names of control variables
-  
-  Data %<>% drop_na %>%  #drop rows with missing entries
-            mutate(Strata=(interaction(select(.,strataVars)))) #create strata
-  
-  #recoding the strata levels in a reproducible way across datasets 
-  oldlevels=levels(Data$Strata) 
-  if (is.null(key)) {
-    key=data_frame(Strata=oldlevels, strata=factor(1:length(oldlevels)))
+  if (ncovs>0) {
+    strataVars=paste("covar",1:ncovs, sep="") #names of control variables
+    Data %<>% mutate(Strata=(interaction(select(.,strataVars)))) #create strata
+    
+    #recoding the strata levels in a reproducible way across datasets 
+    oldlevels=levels(Data$Strata) 
+    if (is.null(key)) {
+      key=data_frame(Strata=oldlevels, strata=factor(1:length(oldlevels)))
+    }
+    Data %<>% left_join(., key, by = "Strata") %>%
+              select(-Strata)
   }
-  Data %<>% left_join(., key, by = "Strata") %>%
-            select(-Strata)
   
   #create factor variable from treatment
   if (k>0) {
@@ -40,13 +42,18 @@ ReadDataApp=function(filepath,
 
   if ("outcome" %in% varnames) {
     retlist=list(Y=Data$outcome, 
-                 D=Data$treatment, 
-                 X=Data$strata,
-                 k=k, nx=length(key$strata),
+                 D=Data$treatment,
+                 k=k, nx=0,
                  key=key)
+    if (ncovs > 0) {
+      retlist$X=Data$strata
+      retlist$nx=length(key$strata)
+    }
   } else {
-    retlist=Data[strataVars]
-    retlist$Xt=Data$strata
+    retlist=Data
+    if (ncovs > 0) {
+      retlist %<>% rename(Xt=strata)
+    }  
   }
   
   

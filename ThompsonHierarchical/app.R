@@ -8,35 +8,29 @@ source("ReadDataApp.R")
 
 ui <- fluidPage(
 #  titlePanel(h1("Optimal treatment assignment given covariates", align = "center")),
-  sidebarLayout(
-    sidebarPanel(
-      width=6,
-      fileInput("file1", "Choose CSV file of previous covariates, treatments, and outcomes",
-                multiple = FALSE,
-                accept = c("text/csv",
-                           "text/comma-separated-values,text/plain",
-                           ".csv")),
-      fileInput("file2", "Choose CSV file of covariates for new wave",
-                multiple = FALSE,
-                accept = c("text/csv",
-                           "text/comma-separated-values,text/plain",
-                           ".csv")),
-      hr(),
-      actionButton(inputId = "calcbutton", label = "Calculate treatment assignment"),
-      hr(),
-      downloadButton("downloadData", "Download treatment assignment")
-      
-    ),
+  verticalLayout(
+    includeMarkdown("instructions.md"),
+    hr(),
+    fluidRow(column(6,
+                    fileInput("file1", "Choose CSV file of previous data",
+                              multiple = FALSE,
+                              accept = c("text/csv",
+                                         "text/comma-separated-values,text/plain",
+                                         ".csv"))),
+             column(6,
+                    fileInput("file2", "Choose CSV file of new wave",
+                              multiple = FALSE,
+                              accept = c("text/csv",
+                                         "text/comma-separated-values,text/plain",
+                                         ".csv")))
+             ),
+    fluidRow(column(6,actionButton(inputId = "calcbutton", label = "Calculate treatment assignment")),
+             column(6,downloadButton("downloadData", "Download treatment assignment"))),
+    hr(),
     
-    mainPanel(
-      width=6,
-      includeMarkdown("instructions.md"),
-      hr(),
-      tableOutput("treatmentcounts"),
-      hr(),
-      tableOutput("designtable")
-    )
-  )  
+    fluidRow(column(6,tableOutput("treatmentcounts")),
+             column(6,tableOutput("designtable")))
+  )
 )
 
 
@@ -56,26 +50,50 @@ server <- function(input, output, session) {
                         priordata$key)    
     
     #calculating treatment assignment
-    newwave$Dstar=as.integer(
-                DtchoiceThompsonHierarchical(priordata$Y,priordata$D,priordata$X, #outcomes, treatments, and covariates thus far
-                                              priordata$k,priordata$nx, #number of treatments and number of strata
-                                              newwave$Xt))
-    v$newwave =rename(newwave,
-                       stratum =Xt,
-                       treatment=Dstar)
+    if (priordata$nx > 0) {
+      newwave$Dstar=as.integer(
+                  DtchoiceThompsonHierarchical(priordata$Y,priordata$D,priordata$X, #outcomes, treatments, and covariates thus far
+                                                priordata$k,priordata$nx, #number of treatments and number of strata
+                                                newwave$Xt))
+      v$newwave =rename(newwave,
+                        stratum =Xt,
+                        treatment=Dstar)
+      
+      v$treatmentcounts=    v$newwave %>%
+        group_by(stratum, treatment) %>%
+        summarise(count=n()) %>%
+        spread(treatment, count)
+    } else {
+      newwave$Dstar=as.integer(
+                    DtchoiceThompson(priordata$Y,priordata$D, #outcomes and treatments thus far
+                                     priordata$k, #number of treatments
+                                     nrow(newwave)))
+      v$newwave =rename(newwave,
+                        treatment=Dstar)
+      
+      v$treatmentcounts=    v$newwave %>%
+        group_by(treatment) %>%
+        summarise(count=n())
+    }
     
-    v$treatmentcounts=    v$newwave %>%
-      group_by(stratum, treatment) %>%
-      summarise(count=n())
+
+    
+
   })
   
-  output$designtable =  renderTable({
-    v$newwave
-   })
+  output$designtable =  renderTable(
+    {v$newwave}, 
+    align="c", 
+    caption="Treatment assignment",
+    caption.placement = getOption("xtable.caption.placement", "top")
+   )
   
-  output$treatmentcounts =  renderTable({
-    v$treatmentcounts
-  })
+  output$treatmentcounts =  renderTable(
+    {v$treatmentcounts}, 
+    align="c",
+    caption="Treatment counts",
+    caption.placement = getOption("xtable.caption.placement", "top")
+  )
  
 #download optimal design
   output$downloadData <- downloadHandler(
