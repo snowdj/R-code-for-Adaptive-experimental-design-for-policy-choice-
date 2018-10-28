@@ -25,8 +25,8 @@ SimulateTWaveDesignThompson=function(Nt,C,theta, PX){
     for (t in seq(2, length=max(0,T-1))) {
         previous=1:MM[t-1]
         current=(MM[t-1]+1):MM[t]
-        Dt=DtchoiceThompsonHierarchical(Y[previous], D[previous], X[previous],
-                                        k,nx, X[current])
+        Dt=DtchoiceThompsonHierarchicalAveraged(Y[previous], D[previous], X[previous],
+                                        k,nx, X[current], RR=5)
         D[current]=Dt
         Y[current]=SimulateY(theta, Dt, X[current]) 
     }
@@ -61,7 +61,7 @@ DataToThetaCovariates=function(filename, dataname, k, strataVars){
     Data=Data %>%
         left_join(., key, by = "Strata") %>%
         select(-Strata)
-    
+    browser()
     #average outcomes by treatment and stratum
     sumstats=Data %>% 
         group_by(treatment, strata) %>%
@@ -112,7 +112,7 @@ ReadAllDataThompson=function(){
     DataList=list()
     columnames=list()
     
-    for (application in 1:2){
+    for (application in 1:3){
         #parameters for each simulation
         if (application==1){
             filename="Ashraf"
@@ -124,6 +124,10 @@ ReadAllDataThompson=function(){
             dataname="Bryan, Chowdhury, and Mobarak (2014)" #,\n \"Underinvestment in a Profitable Technology: The Case of Seasonal Migration in Bangladesh\""
             k=4
             strataVars=c("covar1") #, "covar2")
+        }  else if (application==3) {
+          filename="KarlanList1"
+          dataname="Karlan and List (2007)" #,\n \"Underinvestment in a Profitable Technology: The Case of Seasonal Migration in Bangladesh\""
+          k=4
         }
         
         #produce figures and get Thetas

@@ -11,21 +11,20 @@ ui <- fluidPage(
   verticalLayout(
     includeMarkdown("instructions.md"),
     hr(),
-    fluidRow(column(6,
-                    fileInput("file1", "Choose CSV file of previous data",
+    fluidRow(column(4, fileInput("file1", "Choose CSV file of previous data",
                               multiple = FALSE,
                               accept = c("text/csv",
                                          "text/comma-separated-values,text/plain",
                                          ".csv"))),
-             column(6,
-                    fileInput("file2", "Choose CSV file of new wave",
+             column(4, fileInput("file2", "Choose CSV file of new wave",
                               multiple = FALSE,
                               accept = c("text/csv",
                                          "text/comma-separated-values,text/plain",
-                                         ".csv")))
+                                         ".csv"))),
+             column(4,numericInput(inputId="RR", label="Replicate draws", value=5, min=1, max=100))
              ),
-    fluidRow(column(6,actionButton(inputId = "calcbutton", label = "Calculate treatment assignment")),
-             column(6,downloadButton("downloadData", "Download treatment assignment"))),
+    fluidRow(column(4,actionButton(inputId = "calcbutton", label = "Calculate treatment assignment")),
+             column(4,downloadButton("downloadData", "Download treatment assignment"))),
     hr(),
     
     fluidRow(column(6,tableOutput("treatmentcounts")),
@@ -52,9 +51,9 @@ server <- function(input, output, session) {
     #calculating treatment assignment
     if (priordata$nx > 0) {
       newwave$Dstar=as.integer(
-                  DtchoiceThompsonHierarchical(priordata$Y,priordata$D,priordata$X, #outcomes, treatments, and covariates thus far
+                  DtchoiceThompsonHierarchicalAveraged(priordata$Y,priordata$D,priordata$X, #outcomes, treatments, and covariates thus far
                                                 priordata$k,priordata$nx, #number of treatments and number of strata
-                                                newwave$Xt))
+                                                newwave$Xt, RR=input$RR))
       v$newwave =rename(newwave,
                         stratum =Xt,
                         treatment=Dstar)
@@ -65,9 +64,10 @@ server <- function(input, output, session) {
         spread(treatment, count)
     } else {
       newwave$Dstar=as.integer(
-                    DtchoiceThompson(priordata$Y,priordata$D, #outcomes and treatments thus far
+                    DtchoiceThompsonAveraged(priordata$Y,priordata$D, #outcomes and treatments thus far
                                      priordata$k, #number of treatments
-                                     nrow(newwave)))
+                                     nrow(newwave),
+                                     RR=input$RR))
       v$newwave =rename(newwave,
                         treatment=Dstar)
       

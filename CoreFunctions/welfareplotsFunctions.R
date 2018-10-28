@@ -79,11 +79,13 @@ U=function(A,B,C,n, Vfunction=SWF){
     i=i%/%nplus1[j]
   }
   
-  pp=sapply(1:k, function(j) betabinomial(n[j],0:n[j], A[j], B[j]))
-  ppp=sapply(1:k, function(j) pp[[j]][SM[,j] + 1])
-  #probability of each combination of successes
-  p=apply(ppp,1,prod)
-
+  #probabilities of successes for each treatment separately
+  pp=map(1:k, function(j) betabinomial(n[j],0:n[j], A[j], B[j]))
+  #probabilities of successes in SM matrix, stored as dataframe
+  ppp=map_dfc(1:k, function(j) pp[[j]][SM[,j] + 1])
+  #probability of each combination of successes, multiplying across treatment arms
+  p= map_dbl(1:N, function(ii) prod(ppp[ii,]))
+  
   #posterior expected social welfare for each combination of successes
   SW=sapply(1:N, function(ii) Vfunction(A+SM[ii,] ,B+n-SM[ii,] ,C))
   

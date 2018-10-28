@@ -1,0 +1,19 @@
+welfareplotsFunctions.R: 
+
+betabinomial : function (n, s, a, b)  
+betaposterior : function (D, Y)  
+Dtchoice : function (A, B, C, Nt, method = "optimal")  
+EqualAssignment : function (N, k)  
+GivenAssignment : function (n, k)  
+PolicyChoice : function (A, B, C)  
+Regret : function (D, Y, C, theta)  
+SWF : function (A, B, C)  
+U : function (A, B, C, n, Vfunction = SWF)  
+UoverSimplex : function (A, B, C, N, Ufunction = U, coverage = "full")  
+V : function (A, B, C, NN)  
+
+
+
+NA: 
+
+[1] "/Users/max/Dropbox/research/WorkInProgress/policyexperiments/R-code/CoreFunctions"

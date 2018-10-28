@@ -111,7 +111,7 @@ DtchoiceThompsonHierarchical=function(Y,D,X, #outcomes, treatments, and covariat
 
 
 DtchoiceThompson=function(Y,D, #outcomes and treatments thus far
-                          k, #number of treatments and number of strata
+                          k, #number of treatments
                           Nt){ # number of observations for period t
   
   SS=tapply(Y,D,sum) #vector of successes
@@ -133,6 +133,68 @@ DtchoiceThompson=function(Y,D, #outcomes and treatments thus far
   }
   
   Dt
+}
+
+
+
+DtchoiceThompsonHierarchicalAveraged=function(Y,D,X, #outcomes, treatments, and covariates thus far
+                                      k,nx, #number of treatments and number of strata
+                                      Xt, # covariates for period t
+                                      RR){ #number of replication draws
+  
+  N_Xt=table(Xt) #count of covariate cells
+  Nt=length(Xt)
+  Dt=rep(0,Nt)
+  
+  # Repeat Hierarchical Thompson sampling RR times for Xt
+  XtRR=rep(Xt,RR)
+  DtRR=DtchoiceThompsonHierarchical(Y,D,X,k,nx,XtRR)
+  N_XtDt_average=table(list(X=XtRR,D=DtRR)) / RR #average count for each treatment value and covariate value, replicated sample
+  
+
+  #loop over each covariate value to get assignment vectors
+  for (x in 1:nx) {
+    N_xDt_floor=floor(N_XtDt_average[x,]) #average number of assignments, rounded down
+    Rem_xD = N_XtDt_average[x,] - N_xDt_floor #remainder
+    n_Rem= N_Xt[x] - sum(N_xDt_floor) #remaining number of units to be assigned
+    if (n_Rem> 0) {
+      Dtx= c(rep(1:k, N_xDt_floor), # assigning each treatment acoording to rounded down average count
+            sample(1:k,size=n_Rem,replace=T, prob=Rem_xD)) #remaining units assigned randomly from remain replicate assignments
+    } else {
+      Dtx= rep(1:k, N_xDt_floor)
+    }  
+    Dt[Xt==x] = sample(Dtx) #randomly permute
+  }
+  
+  
+  Dt
+}
+
+
+DtchoiceThompsonAveraged=function(Y,D, #outcomes and treatments thus far
+                                  k, #number of treatments
+                                  Nt, # number of observations for period t
+                                  RR){ #number of replication draws
+  
+  Dt=rep(0,Nt)
+  
+  # Repeat Thompson sampling RR times
+  DtRR=DtchoiceThompson(Y,D,k,Nt*RR)
+  N_Dt_average=table(DtRR) / RR #average count for each treatment value and covariate value, replicated sample
+  
+
+  N_Dt_floor=floor(N_Dt_average) #average number of assignments, rounded down
+  Rem_D = N_Dt_average - N_Dt_floor #remainder
+  n_Rem= Nt - sum(N_Dt_floor) #remaining number of units to be assigned
+    
+  if (n_Rem> 0) {
+    Dt= c(rep(1:k, N_Dt_floor), # assigning each treatment acoording to rounded down average count
+         sample(1:k,size=n_Rem,replace=T, prob=Rem_D)) #remaining units assigned randomly from remain replicate assignments
+  } else {
+    Dt= rep(1:k, N_Dt_floor)
+  }
+    
+  sample(Dt) #randomly permute
 }
 
 

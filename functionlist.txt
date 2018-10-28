@@ -1,0 +1,73 @@
+CoreFunctions/SimulatedFunctions.R: 
+
+Seed : function (A, B, Nmax)  
+simplex : function (N, k, coverage = "full", RR = 500, thetahat = NULL)  
+simulatedSample : function (D, theta)  
+Uhat : function (A, B, C, n, Vfunction = SWF)  
+
+
+
+CoreFunctions/welfareplotsFunctions.R: 
+
+betabinomial : function (n, s, a, b)  
+betaposterior : function (D, Y)  
+Dtchoice : function (A, B, C, Nt, method = "optimal")  
+EqualAssignment : function (N, k)  
+GivenAssignment : function (n, k)  
+PolicyChoice : function (A, B, C)  
+Regret : function (D, Y, C, theta)  
+SWF : function (A, B, C)  
+U : function (A, B, C, n, Vfunction = SWF)  
+UoverSimplex : function (A, B, C, N, Ufunction = U, coverage = "full")  
+V : function (A, B, C, NN)  
+
+
+
+CoreFunctions/welfareplotsGraphics.R: 
+
+OptimalPilot : function (A, B, C, M, parallel = TRUE)  
+PlotSimplex : function (A, B, C, N)  
+PlotSimplexAlternative : function (A, B, C, N)  
+SimplexPanel : function (N, alternativeplot = FALSE)  
+
+
+
+ThompsonHierarchical/CreateTestDataApp.R: 
+
+
+
+
+ThompsonHierarchical/ReadDataApp.R: 
+
+ReadDataApp : function (filepath, key = NULL)  
+
+
+
+ThompsonHierarchical/ThompsonHierarchical.R: 
+
+betabinomialMLE : function (NN, SS)  
+DtchoiceThompson : function (Y, D, k, Nt)  
+DtchoiceThompsonAveraged : function (Y, D, k, Nt, RR)  
+DtchoiceThompsonHierarchical : function (Y, D, X, k, nx, Xt)  
+DtchoiceThompsonHierarchicalAveraged : function (Y, D, X, k, nx, Xt, RR)  
+hierarchicalPosteriorDraw : function (NN, SS, LLH)  
+hierarchicalPosteriorMean : function (Y, D, X, draws = 1000)  
+SimulateX : function (PX, N)  
+SimulateY : function (theta, D, X)  
+StratifiedAssignment : function (X, k, nx)  
+
+
+
+missing scripts: 
+ [1] "CalibratedSimulations/calibratedSimulations.R"
+ [2] "CalibratedSimulations/ReadDataCalibrate.R"    
+ [3] "CoreFunctions/welfareplots.R"                 
+ [4] "FunctionOverview.R"                           
+ [5] "Illustrations/Illustration_NonConvexity.R"    
+ [6] "ThompsonHierarchical/app.R"                   
+ [7] "ThompsonHierarchical/ThompsonCalibration.R"   
+ [8] "webApp1Wave/app.R"                            
+ [9] "webApp1Wave/SimulatedFunctions.R"             
+[10] "webApp1Wave/welfareplots.R"                   
+[11] "webApp1Wave/welfareplotsFunctions.R"          
+[12] "webApp1Wave/welfareplotsGraphics.R"           

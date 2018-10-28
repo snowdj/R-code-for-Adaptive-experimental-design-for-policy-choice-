@@ -4,7 +4,8 @@
 library(shiny)
 rm(list = ls())
 source("welfareplotsFunctions.R")
-source("welfareplotsGraphics.r")
+source("welfareplotsGraphics.R")
+source("SimulatedFunctions.R")
 
 
 

@@ -8,5 +8,7 @@ The app allows for the case that no covariates are provided.
 
 **New wave**: Columns labeled 
 * *covar1, covar2, ...* (same as previous data)
-* Any other variables, which will be ignored by the app, but might serve as identifiers in treatment dataset.
+* Any other variables, which will be ignored by the app, but might serve as identifiers in treatment dataset.  
+
+**Replicate draws**: A larger choice will yield less random treatment counts, but results in slower computation.
 

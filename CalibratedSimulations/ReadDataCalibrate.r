@@ -40,9 +40,11 @@ DataToTheta=function(filename, dataname, dbar, strataVars, printFigures=FALSE){
     summarize(n=sum(obs))
   
   if (printFigures) {
-    ggplot(stratasizes, aes(x=factor(strata, levels = rev(levels(strata))), y=n)) +
+    #careful: we are dropping "missing" strata from figures!
+    ggplot(drop_na(stratasizes),aes(x=factor(strata, levels = rev(levels(strata))), y=n)) +
       geom_col(fill=fillcolor, width=.5) + 
-      theme(panel.background = element_rect(fill = backcolor, colour = NA),
+      theme_light() +
+      theme(#panel.background = element_rect(fill = backcolor, colour = NA),
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank()) +
       coord_flip() +
@@ -50,22 +52,26 @@ DataToTheta=function(filename, dataname, dbar, strataVars, printFigures=FALSE){
            subtitle=dataname,
            x="stratum", y="number of observations")
     
-    ggsave(paste("../../Figures/Applications/", filename, "strata.pdf", sep=""), width = 5, height =1.5+ .2*length(levels(sumstats$strata)))
+    ggsave(paste("../../Figures/Applications/", filename, "strata.pdf", sep=""), width = 4, height =1+ .3*length(levels(sumstats$strata)))
     
-    
-    ggplot(sumstats, aes(x=meanout, y=factor(treatment,levels=c(dbar:1)))) +
+    xmax=1
+    if (max(sumstats$meanout) < .5) xmax= max(sumstats$meanout)+.02
+    ggplot(drop_na(sumstats), aes(x=meanout, y=factor(treatment,levels=c(dbar:1)))) +
       geom_point(color=fillcolor) +
+      geom_segment(aes(x=0, xend=meanout, yend=factor(treatment,levels=c(dbar:1))), color=fillcolor, size=.5) +
       #scale_y_discrete(labels=paste("treatment", 1:dbar)) + 
       facet_grid(strata~.) +
-      scale_x_continuous(limits=c(0,1)) +
-      theme(panel.background = element_rect(fill = backcolor, colour = NA),
-            panel.grid.major = element_line(colour=gridcolor),
-            panel.grid.minor = element_blank()) +
+      scale_x_continuous(limits=c(0,xmax)) +
+      theme_light() +
+      theme(#panel.background = element_rect(fill = backcolor, colour = NA),
+            panel.grid.major = element_blank(),
+            panel.grid.minor = element_blank(),
+            axis.ticks.x=element_blank()) +
       labs(title="Average outcomes by treatment and stratum",
            subtitle=dataname,
            x="mean outcome", y="treatment")
     
-    ggsave(paste("../../Figures/Applications/", filename, ".pdf", sep=""), width = 5, height = 0.15*length(levels(sumstats$strata))*dbar+1.5)
+    ggsave(paste("../../Figures/Applications/", filename, ".pdf", sep=""), width = 4, height = 0.15*length(levels(sumstats$strata))*dbar+1.5)
   
     write_csv(sumstats, paste("../../Figures/Applications/", filename, "Sumstats.csv", sep=""))
   }
@@ -78,7 +84,7 @@ RunCalibratedSimulations=function(){
   ThetaList=list()
   columnames=list()
   
-  for (application in 1:2){
+  for (application in 1:3){
     #parameters for each simulation
     if (application==1){
       filename="Ashraf"
@@ -90,10 +96,15 @@ RunCalibratedSimulations=function(){
       dataname="Bryan, Chowdhury, and Mobarak (2014)" #,\n \"Underinvestment in a Profitable Technology: The Case of Seasonal Migration in Bangladesh\""
       dbar=4
       strataVars=c("covar1") #, "covar2")
+    } else if (application==3) {
+      filename="KarlanList2"
+      dataname="Karlan and List (2007)" #,\n \"Underinvestment in a Profitable Technology: The Case of Seasonal Migration in Bangladesh\""
+      dbar=13
+      strataVars=c("covar1")
     }
     
     #produce figures and get Thetas
-    DataSummary=DataToTheta(filename, dataname, dbar, strataVars)
+    DataSummary=DataToTheta(filename, dataname, dbar, strataVars, printFigures=T)
     
     ThetaList[[application]]=DataSummary$theta
     columnames[[application]]=filename
@@ -102,7 +113,7 @@ RunCalibratedSimulations=function(){
   #parameters of hypothetical experiment
   NN=rep(24,12)
   R=4000
-  DesignTable(NN,ThetaList,R,columnames,"Applications/CalibratedSimulations")
+  #DesignTable(NN,ThetaList,R,columnames,"Applications/CalibratedSimulations")
   
 }
 
