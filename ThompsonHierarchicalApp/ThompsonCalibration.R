@@ -1,9 +1,3 @@
-#.rs.restartR()
-library(tidyverse)
-source("ThompsonHierarchical.R")
-
-
- 
 SimulateTWaveDesignThompson=function(Nt,C,theta, PX){
     k=length(C) #number of treatment arms
     nx = length(PX)
@@ -45,7 +39,7 @@ SimulateTWaveDesignThompson=function(Nt,C,theta, PX){
 
 
 DataToThetaCovariates=function(filename, dataname, k, strataVars){
-    Data=read_csv(paste("../../Datasets/Cleaned/", filename, ".csv", sep=""))
+    Data=read_csv(paste("../Datasets/Cleaned/", filename, ".csv", sep=""))
     head(Data)
     #check for missings?
     
@@ -177,8 +171,7 @@ RunAllSimulationsThompson=function(T = 4, #number of waves
     ## TBD: formatting, design choices, further comparisons?
 }
 
- 
-RunAllSimulationsThompson(RR=50)
+
 
 #modify this to get repeated draws, and adjust X distribution / weighting of regret
 # include stratified equalsplit as comparison, and fully random assignment.
