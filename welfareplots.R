@@ -6,8 +6,8 @@ source("OptimalAssignmentFunctions/WelfareFunctions.R")
 source("OptimalAssignmentFunctions/welfareplotsGraphics.R")
 source("OptimalAssignmentFunctions/SimulatedWelfareFunctions.R")
 
-Simplices = T #whether to plot welfare simplices
-WaveDivision = F #whether to explore effect of wave sizes on welfare
+Simplices = F #whether to plot welfare simplices
+WaveDivision = T #whether to explore effect of wave sizes on welfare
 
 if (Simplices) {
     for (N in c(3,4,6,10)) {
@@ -21,7 +21,7 @@ if (WaveDivision){
     A=rep(1,k)
     B=rep(1,k)
     C=rep(0,k)
-    M=10
+    M=9
     OptimalPilot(A, B, C, M)
     
     filename=paste(c("../Figures/OptimalPilot/OptimalPilot_", M, "_prior", A ,".pdf"), collapse="")  

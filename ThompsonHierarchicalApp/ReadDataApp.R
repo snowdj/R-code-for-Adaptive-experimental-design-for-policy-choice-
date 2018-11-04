@@ -43,7 +43,7 @@ ReadDataApp=function(filepath,
   if ("outcome" %in% varnames) {
     retlist=list(Y=Data$outcome, 
                  D=Data$treatment,
-                 k=k, nx=0,
+                 k=k, nx=1,
                  key=key)
     if (ncovs > 0) {
       retlist$X=Data$strata

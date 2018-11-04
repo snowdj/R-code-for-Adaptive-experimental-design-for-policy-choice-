@@ -49,7 +49,7 @@ server <- function(input, output, session) {
                         priordata$key)    
     
     #calculating treatment assignment
-    if (priordata$nx > 0) {
+    if (priordata$nx > 1) {
       newwave$Dstar=as.integer(
                   DtchoiceThompsonHierarchicalAveraged(priordata$Y,priordata$D,priordata$X, #outcomes, treatments, and covariates thus far
                                                 priordata$k,priordata$nx, #number of treatments and number of strata

@@ -1,0 +1,82 @@
+#  CalibratedSimulationFunctions 
+
+### calibratedSimulationFunctions.R 
+DesignTable : function (NN, DataList, methods, R = 100, columnames = NULL, filename = NULL)  
+ExpectedRegret : function (NN, C, theta, methods, R)  
+PrintRegretTable : function (RegretTable, NN, filename)  
+SimulateTWaveDesign : function (NN, C, theta, method = "modifiedthompson")  
+
+
+
+### ReadData.R 
+DataToTheta : function (filename, dataname, k, strataVars, OutcomeName, TreatmentName, 
+    CovariatesNames, printFigures = FALSE)  
+PrintDataFigures : function (stratasizes, sumstats, filename, dataname, FooterText, k)  
+ReadAllData : function (printFigures = F)  
+
+
+
+#  IllustrationFunctions 
+
+### Illustration_NonConvexity_Functions.R 
+MSEcalc : function (theta, N)  
+powerCalc : function (theta, N)  
+stylizedDesign : function (A, B, C, N)  
+
+
+
+#  OptimalAssignmentFunctions 
+
+### SimulatedWelfareFunctions.R 
+Seed : function (A, B, Nmax)  
+simplex : function (N, k, coverage = "full", RR = 500, thetahat = NULL)  
+simulatedSample : function (D, theta)  
+Uhat : function (A, B, C, n, Vfunction = SWF)  
+
+
+
+### WelfareFunctions.R 
+betabinomial : function (n, s, a, b)  
+betaposterior : function (D, Y)  
+Dtchoice : function (A, B, C, Nt, method = "optimal")  
+EqualAssignment : function (N, k)  
+GivenAssignment : function (n, k)  
+PolicyChoice : function (A, B, C)  
+Regret : function (D, Y, C, theta)  
+SWF : function (A, B, C)  
+U : function (A, B, C, n, Vfunction = SWF)  
+UoverSimplex : function (A, B, C, N, Ufunction = U, coverage = "full")  
+V : function (A, B, C, NN)  
+
+
+
+### welfareplotsGraphics.R 
+OptimalPilot : function (A, B, C, M, parallel = TRUE)  
+PlotSimplex : function (A, B, C, N)  
+PlotSimplexAlternative : function (A, B, C, N)  
+SimplexPanel : function (N, alternativeplot = FALSE)  
+
+
+
+#  ThompsonHierarchicalFunctions 
+
+### ThompsonCalibration.R 
+RunAllSimulationsThompson : function (DataList, T = 4, nt = 36, RR = 1000)  
+SimulateTWaveDesignThompson : function (Nt, C, theta, PX)  
+
+
+
+### ThompsonHierarchical.R 
+betabinomialMLE : function (NN, SS)  
+DtchoiceThompson : function (Y, D, k, Nt)  
+DtchoiceThompsonAveraged : function (Y, D, k, Nt, RR)  
+DtchoiceThompsonHierarchical : function (Y, D, X, k, nx, Xt)  
+DtchoiceThompsonHierarchicalAveraged : function (Y, D, X, k, nx, Xt, RR)  
+hierarchicalPosteriorDraw : function (NN, SS, LLH)  
+hierarchicalPosteriorMean : function (Y, D, X, draws = 1000)  
+SimulateX : function (PX, N)  
+SimulateY : function (theta, D, X)  
+StratifiedAssignment : function (X, k, nx)  
+
+
+
