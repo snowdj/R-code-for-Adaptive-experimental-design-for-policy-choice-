@@ -1,0 +1,25 @@
+> source("OptimalAssignmentFunctions/WelfareFunctions.R")
+> source("OptimalAssignmentFunctions/welfareplotsGraphics.R")
+> source("OptimalAssignmentFunctions/SimulatedWelfareFunctions.R")
+> 
+> source("IllustrationFunctions/Illustration_NonConvexity_Functions.R")
+> 
+> backcolor="azure2" #background color for plots
+> gridcolor="azure1"
+> fillcolor="skyblue4"
+> 
+> # expected welfare calculations
+> 
+> #2 treatment values
+> #de-facto degenerate prior for treatment 2
+> N=20
+> C=c(0,0)
+> 
+> 
+> A=c(1,10000)
+> B=c(5,10000)
+> stylizedDesign(A,B,C,N)
+Error in map(1:k, function(j) betabinomial(n[j], 0:n[j], A[j], B[j])) : 
+  could not find function "map"
+Calls: stylizedDesign ... UoverSimplex -> sapply -> lapply -> FUN -> Ufunction
+Execution halted

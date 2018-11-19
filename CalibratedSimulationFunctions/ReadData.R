@@ -1,4 +1,4 @@
-DataToTheta=function(filename, dataname, k, strataVars, OutcomeName,TreatmentName, CovariatesNames, printFigures=FALSE){
+DataToTheta=function(filename, dataname, k, strataVars, outcomename,treatmentname, covariatesnames, printFigures=FALSE){
     Data=read_csv(paste("../Datasets/Cleaned/", filename, ".csv", sep=""))
     N=nrow(Data)
     
@@ -33,12 +33,8 @@ DataToTheta=function(filename, dataname, k, strataVars, OutcomeName,TreatmentNam
     
     
     # Figures and tables
-    if (printFigures) {
-        FooterText=paste("Average of ", OutcomeName,
-                         "\nfor each value of the treatment (", TreatmentName,
-                         "),\nand each value of ", CovariatesNames, ".", sep="")
-        PrintDataFigures(stratasizes,sumstats,filename,dataname,FooterText, k)
-    }
+    if (printFigures)
+        PrintDataFigures(stratasizes,sumstats,theta, filename,dataname,outcomename,treatmentname, k)
     
     
     
@@ -75,7 +71,13 @@ DataToTheta=function(filename, dataname, k, strataVars, OutcomeName,TreatmentNam
 
 
 #produce figures and tables of calibrated parameter values
-PrintDataFigures=function(stratasizes, sumstats, filename, dataname,FooterText, k){
+PrintDataFigures=function(stratasizes,sumstats,theta, filename,dataname,outcomename,treatmentname, k){
+    
+    # Footer1Text=paste("Average of ", outcomename,
+    #                  "\nfor each value of the treatment (", treatmentname,
+    #                  "),\nand each value of ", covariatesnames, ".", sep="")
+
+  
     #careful: we are dropping "missing" strata from figures!
     ggplot(drop_na(stratasizes),aes(x=factor(strata, levels = rev(levels(strata))), y=n)) +
         geom_col(fill=fillcolor, width=.5) + 
@@ -86,9 +88,9 @@ PrintDataFigures=function(stratasizes, sumstats, filename, dataname,FooterText, 
         coord_flip() +
         labs(title="Strata size",
              subtitle=dataname,
-             x="stratum", y="number of observations")
+             x="Stratum", y="Number of observations")
     
-    ggsave(paste("../Figures/Applications/", filename, "strata.pdf", sep=""), width = 4, height =1+ .3*length(levels(sumstats$strata)))
+    #ggsave(paste("../Figures/Applications/", filename, "strata.pdf", sep=""), width = 4, height =1+ .3*length(levels(sumstats$strata)))
     
     xmax=1
     if (max(sumstats$meanout) < .5) xmax= max(sumstats$meanout)+.02
@@ -107,30 +109,38 @@ PrintDataFigures=function(stratasizes, sumstats, filename, dataname,FooterText, 
             panel.grid.minor = element_blank(),
             axis.ticks.x=element_blank(),
             plot.caption=element_text(size=7)) +
-        labs(title="Average outcomes by treatment and stratum",
+        labs(title=paste("Average of ", outcomename, " by treatment", sep=""),
              subtitle=dataname,
-             x="mean outcome", y="treatment",
-             caption=FooterText)
+             x="Mean outcome", y="Treatment")#,
+             #caption=Footer1Text)
     
-    # alternative version, with sorting first by strata, then by treatment
+    #ggsave(paste("../Figures/Applications/", filename, ".pdf", sep=""), width = 4, height = 0.15*length(levels(sumstats$strata))*k+1.5)
+
     
-    # ggplot(drop_na(sumstats), aes(x=meanout, y=factor(strata))) +
-    #     geom_point(color=fillcolor) +
-    #     geom_segment(aes(x=0, xend=meanout, yend=factor(strata)), color=fillcolor, size=.5) +
-    #     #scale_y_discrete(labels=paste("treatment", 1:k)) + 
-    #     facet_grid(factor(treatment, levels=(1:k)) ~.) +
-    #     scale_x_continuous(limits=c(0,xmax)) +
-    #     theme_light() +
-    #     theme(#panel.background = element_rect(fill = backcolor, colour = NA),
-    #         panel.grid.major = element_blank(),
-    #         panel.grid.minor = element_blank(),
-    #         axis.ticks.x=element_blank()) +
-    #     labs(title="Average outcomes by treatment and stratum",
-    #          subtitle=dataname,
-    #          x="mean outcome", y="stratum", facet="treatment")
+    FooterText=paste("Outcome: ", outcomename, 
+                     "\nTreatments: ", treatmentname, 
+                     ".", sep="")
+    xmax=1
+    if (max(theta$meanout) < .3) xmax= max(theta$meanout)+.02
     
-    ggsave(paste("../Figures/Applications/", filename, ".pdf", sep=""), width = 4, height = 0.15*length(levels(sumstats$strata))*k+1.5)
+    ggplot(theta, aes(x=meanout, y=factor(treatment,levels=c(k:1)))) +
+      geom_point(color=fillcolor) +
+      geom_segment(aes(x=0, xend=meanout, yend=factor(treatment,levels=c(k:1))), color=fillcolor, size=.5) +
+      #scale_y_discrete(labels=paste("treatment", 1:k)) +
+      scale_x_continuous(limits=c(0,xmax)) +
+      theme_light() +
+      theme(#panel.background = element_rect(fill = backcolor, colour = NA),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.ticks.x=element_blank(),
+        plot.caption=element_text(size=7)) +
+      labs(title=dataname,
+           x="Mean outcome", y="Treatment",
+           caption=FooterText)
     
+    ggsave(paste("../Figures/Applications/", filename, "_NoStrata.pdf", sep=""), width = 4, height = 0.15*k+1.5)
+    
+        
     write_csv(sumstats, paste("../Figures/Applications/", filename, "Sumstats.csv", sep=""))
     
 }
@@ -144,47 +154,9 @@ ReadAllData=function(printFigures=F){
     ApplicationTable=read_csv("../Datasets/ApplicationTable.csv")
   
     #read in data for each row of Application table, store output in each element of DataList
-    DataList=pmap(ApplicationTable, function(filename, dataname, k, stratavars, OutcomeName,TreatmentName, CovariatesNames) #make sure ApplicationTable has these column names
-                  DataToTheta(filename, dataname, k, stratavars, OutcomeName, TreatmentName, CovariatesNames, printFigures=printFigures))
+    DataList=pmap(ApplicationTable, function(filename, dataname, k, stratavars, outcomename,treatmentname, covariatesnames) #make sure ApplicationTable has these column names
+                  DataToTheta(filename, dataname, k, stratavars, outcomename, treatmentname, covariatesnames, printFigures=printFigures))
         
 
     DataList
 }
-
-
-
-
-
-
-#parameters of hypothetical experiment
-# NN=rep(24,12)
-# R=4000
-#DesignTable(NN,ThetaList,R,columnames,"Applications/CalibratedSimulations")
-
-
-#List of Thetas to consider
-# N1=16
-# N2=16
-# R= 4000
-# ThetaList=list(c(.2,.5,.8),
-#                c(.6,.5,.4),
-#                c(.2,.4,.6,.8),
-#                c(.2,.4,.5,.6,.7,.8))
-# DesignTable(N1,N2,ThetaList,R,filename="Test")
-
-#another list
-# NN=rep(36,2)
-# ThetaList=list(seq(.2,length=8, by=.1),
-#                seq(.4,length=8, by=.05),
-#                seq(.4,length=8, by=.025),
-#                seq(.4,length=8, by=.01))
-# columnames=c("space .1", "space .05", "space .025", "space .01")
-# DesignTable(NN,ThetaList,R,columnames,filename="8options")
-
-
-#another list
-# NN=rep(12,10)
-# ThetaList=list(seq(.5,length=6, by=.05),
-#                c(.6, .59, .36, .35))
-# columnames=c("like Ashraf", "like Bryan")
-# DesignTable(NN,ThetaList,R,columnames,filename="almostEmpirical")

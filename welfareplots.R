@@ -21,7 +21,7 @@ if (WaveDivision){
     A=rep(1,k)
     B=rep(1,k)
     C=rep(0,k)
-    M=9
+    M=10
     OptimalPilot(A, B, C, M)
     
     filename=paste(c("../Figures/OptimalPilot/OptimalPilot_", M, "_prior", A ,".pdf"), collapse="")  

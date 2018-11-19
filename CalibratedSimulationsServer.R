@@ -11,7 +11,7 @@ gridcolor="azure1"
 fillcolor="skyblue4"
 
 
-DataList=ReadAllData(printFigures=T)
+DataList=ReadAllData(printFigures=F)
 
 #for each elemant of DataList (each application), extract the theta sub-element, and filename sub-element
 #ThetaList=map(DataList, "theta")
@@ -19,7 +19,7 @@ columnames=map(DataList, "filename")
 
 #size of waves, and number of replications
 #NN=rep(400,2)
-MC_replicates=10000
+MC_replicates=5000
 
 #which methods of treatment assignment to simulate
 #indices corresponding to:
@@ -35,12 +35,12 @@ MC_replicates=10000
 methods=c(1,7,8,9)
 
 
-for (Mult in c(.5,1)) { # multiples of original sample size
+for (Mult in c(.5, 1, 1.5)) { # multiples of original sample size
   for (waves in c(2,4,10)) { # number of waves
       for (i in 1:length(DataList)) {
           DataList[[i]]$NtN = rep( floor(DataList[[i]]$N * Mult / waves) ,waves) 
       }
-      DesignTable(DataList,methods,MC_replicates,columnames,filename=paste("Nov17_CalibratedSimulations_T_", waves, "_" ,Mult, sep=""))
+      DesignTable(DataList,methods,MC_replicates,columnames,filename=paste("Nov16_Server_CalibratedSimulations_T_", waves, "_" ,Mult, sep=""))
   }
 }
 

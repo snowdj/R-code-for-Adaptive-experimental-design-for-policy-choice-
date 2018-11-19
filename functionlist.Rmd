@@ -1,17 +1,20 @@
 #  CalibratedSimulationFunctions 
 
 ### calibratedSimulationFunctions.R 
-DesignTable : function (NN, DataList, methods, R = 100, columnames = NULL, filename = NULL)  
+DesignTable : function (DataList, methods, MC_replicates = 100, columnames = NULL, 
+    filename = NULL)  
 ExpectedRegret : function (NN, C, theta, methods, R)  
-PrintRegretTable : function (RegretTable, NN, filename)  
+PrintRegretHistogram : function (shareTreatmentsList, filename, MC_replicates, waves, columnames)  
+PrintRegretTable : function (RegretTable, filename, MC_replicates, waves)  
 SimulateTWaveDesign : function (NN, C, theta, method = "modifiedthompson")  
 
 
 
 ### ReadData.R 
-DataToTheta : function (filename, dataname, k, strataVars, OutcomeName, TreatmentName, 
-    CovariatesNames, printFigures = FALSE)  
-PrintDataFigures : function (stratasizes, sumstats, filename, dataname, FooterText, k)  
+DataToTheta : function (filename, dataname, k, strataVars, outcomename, treatmentname, 
+    covariatesnames, printFigures = FALSE)  
+PrintDataFigures : function (stratasizes, sumstats, theta, filename, dataname, outcomename, 
+    treatmentname, k)  
 ReadAllData : function (printFigures = F)  
 
 

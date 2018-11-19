@@ -126,7 +126,7 @@ DtchoiceThompson=function(Y,D, #outcomes and treatments thus far
     thetadraw=sapply(1:k, function(j) rbeta(1, A[j], B[j]))
     Dt[i]=which.max(thetadraw)
     if (Dt[i] == previousD) {
-      thetadraw[Dt] = -Inf
+      thetadraw[previousD] = -Inf
       Dt[i]=which.max(thetadraw)
     }
     previousD = Dt[i]
@@ -180,7 +180,7 @@ DtchoiceThompsonAveraged=function(Y,D, #outcomes and treatments thus far
   
   # Repeat Thompson sampling RR times
   DtRR=DtchoiceThompson(Y,D,k,Nt*RR)
-  N_Dt_average=table(DtRR) / RR #average count for each treatment value and covariate value, replicated sample
+  N_Dt_average=tabulate(DtRT,k) / RR #average count for each treatment value and covariate value, replicated sample
   
 
   N_Dt_floor=floor(N_Dt_average) #average number of assignments, rounded down

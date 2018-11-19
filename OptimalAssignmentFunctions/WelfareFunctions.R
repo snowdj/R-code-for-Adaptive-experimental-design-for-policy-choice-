@@ -154,6 +154,12 @@ Dtchoice=function(A,B,C,Nt, method="optimal"){
     USimplex=UoverSimplex(A,B,C,Nt, Ufunction=U, coverage="random")
     nt=USimplex[which.max(USimplex$U), 1:k]
     Dt=GivenAssignment(nt,k)
+  } else if (method == "optimalhatrandom") {
+    # find the assignment maximizing simulated expected welfare, over random set of assignments
+    Seed(A,B, Nt)
+    USimplex=UoverSimplex(A,B,C,Nt, Ufunction=Uhat, coverage="random")
+    nt=USimplex[which.max(USimplex$U), 1:k]
+    Dt=GivenAssignment(nt,k)    
   } else if (method == "optimalhandpicked"){
     USimplex=UoverSimplex(A,B,C,Nt, Ufunction=U, coverage="handpicked")
     nt=USimplex[which.max(USimplex$U), 1:k]
@@ -179,14 +185,32 @@ Dtchoice=function(A,B,C,Nt, method="optimal"){
     # assign treatment in proportion to probability of being best
     # but don't allow same treatment two times in a row
     k=length(A)
-    Dt=rep(0,Nt)
-    Dt[1]=which.max(sapply(1:k, function(j) rbeta(1, A[j], B[j])))
-    i=2
-    while (i<=Nt) {
-      Dt[i]=which.max(sapply(1:k, function(j) rbeta(1, A[j], B[j])))
-      if (Dt[i] !=Dt[i-1]) {i=i+1}
+    RT=5 #number of replicate draws over which to average
+    DtRT=rep(0,Nt*RT)
+    
+    previousD=-Inf # auxiliary variable to avoid repeat assignments of same D
+    for (i  in 1:(Nt*RT)) {
+        thetadraw=sapply(1:k, function(j) rbeta(1, A[j], B[j]))
+        DtRT[i]=which.max(thetadraw)
+        if (DtRT[i] == previousD) {
+            thetadraw[previousD] = -Inf
+            DtRT[i]=which.max(thetadraw)
+        }
+        previousD = DtRT[i]
+    }
+    
+    N_Dt_average=tabulate(DtRT,k) / RT #average count for each treatment value and covariate value, replicated sample
+    N_Dt_floor=floor(N_Dt_average) #average number of assignments, rounded down
+    Rem_D = N_Dt_average - N_Dt_floor #remainder
+    n_Rem= round(sum(Rem_D)) #remaining number of units to be assigned
+
+    if (n_Rem> 0) {
+        Dt= c(rep(1:k, N_Dt_floor), # assigning each treatment acoording to rounded down average count
+              sample(1:k,size=n_Rem,replace=T, prob=Rem_D)) #remaining units assigned randomly from remain replicate assignments
+    } else {
+        Dt= rep(1:k, N_Dt_floor)
     }
   }
-  
+
   Dt
 }

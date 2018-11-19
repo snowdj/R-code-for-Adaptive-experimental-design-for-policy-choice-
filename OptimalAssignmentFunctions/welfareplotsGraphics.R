@@ -129,7 +129,7 @@ OptimalPilot=function(A,B,C,M, parallel=TRUE){
   
   ggplot(pilot, aes(x=as.integer(n1), y=Vn1)) +
     geom_line(size=1, color= "skyblue4")+
-    xlab(expression(N[1])) + ylab("ESWF") +
+    xlab(expression(N[1])) + ylab(expression(V[0])) +
     scale_x_continuous(breaks = 0:M) +
     theme_light() +
     theme(panel.grid.minor = element_blank(),

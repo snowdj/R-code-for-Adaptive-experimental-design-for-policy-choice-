@@ -46,48 +46,66 @@ ExpectedRegret=function(NN,C,theta,methods,R){
   no_cores = detectCores()
   clust = makeCluster(no_cores, type="FORK")  #forking requires mac or Linux OS!
 
-  twoWaveMethods=c("conventional",
+  Methods=c("conventional",
                    "optimalhandpicked",
                    "optimalrandom",
                    "optimalhat",
+                   "optimalhatrandom",
                    "optimal",
                    "besthalf",
                    "thompson",
                    "modifiedthompson")   
-  twoWaveNames=c("conventional design",
+  MethodNames=c("non-adaptive",
                  "handpicked",
                  "random",
                  "estimated U",
+                 "estimated U, random set",
                  "optimized",
-                 "rule of thumb",
+                 "best half",
                  "Thompson",
                  "modified Thompson")
-
+  shareTreatments=list() #empty list to store vectors of shares assigned to each treatment
+      
   for (i in methods) { #pick here which methods to simulate
-    regret2Wave=parSapply(clust, 1:R, function(j) SimulateTWaveDesign(NN,C,theta, twoWaveMethods[i]))
+      sink("status_ExpectedRegret.txt") #status file to track computations
+      cat("waves ", NN, "\n", 
+          "theta", theta, "\n",
+          "method", Methods[i])
+      sink()  
+    #if (i==9) browser()  
+      
+    regret2Wave=parSapply(clust, 1:R, function(j) SimulateTWaveDesign(NN,C,theta, Methods[i]))
     regretTable=rbind(get0("regretTable"),
-                      tibble(Statistic=paste("regret, T wave ", twoWaveNames[i], sep=""),
+                      tibble(Statistic=paste("Regret, ", MethodNames[i], sep=""),
                                 Value=mean(regret2Wave[1,])))
     shareoptTable=rbind(get0("shareoptTable"),
-                        tibble(Statistic=paste("share optimal, T wave ", twoWaveNames[i], sep=""),
+                        tibble(Statistic=paste("Share optimal, ", MethodNames[i], sep=""),
                                 Value=mean(regret2Wave[1,]==0)))
+    
+    shareTreatments[[Methods[i]]]=table(factor(regret2Wave[1,], levels=max(theta)-theta)) #store shares assigned to each treatment for method i
   }
   
  
   stopCluster(clust)
   
-  rbind(regretTable, shareoptTable)
+  lastrows=tibble(Statistic=c("Units per wave", "Number of treatments"),
+                 Value=c(NN[1], k))
+  tablecolumns=rbind(regretTable, shareoptTable, lastrows)
 
+  list(tablecolumns = tablecolumns, shareTreatments=shareTreatments)
 }
 
 
 
-DesignTable=function(NN,DataList,methods,R=100,columnames=NULL,filename=NULL) {
+DesignTable=function(DataList,methods,MC_replicates=100,columnames=NULL,filename=NULL) {
 
   # Run Expected Regret simulations for each value of theta    
-  RegretTableTemp=map(DataList, function(data) 
-                    ExpectedRegret(NN,C=rep(0, length(data$theta)),data$theta,methods,R))      
+  ResultsTemp=map(DataList, function(data) 
+                    ExpectedRegret(data$NtN,C=rep(0, length(data$theta)),data$theta,methods,MC_replicates))      
     
+  RegretTableTemp=map(ResultsTemp, "tablecolumns") #extract table columns
+  shareTreatmentsList=map(ResultsTemp, "shareTreatments") #extract shares assigned to treatments
+  
   # Combine tables
   RegretTable=bind_cols(RegretTableTemp[[1]]["Statistic"], #row labels
                         map(RegretTableTemp, 2)) #keep only simulation values
@@ -101,21 +119,30 @@ DesignTable=function(NN,DataList,methods,R=100,columnames=NULL,filename=NULL) {
   }
   
   #write to tex file
-  if (!is.null(filename)) PrintRegretTable(RegretTable,NN,filename)
+  waves=length(DataList[[1]]$NtN)
+  if (!is.null(filename)) {
+      PrintRegretTable(RegretTable,filename, MC_replicates, waves)
+      PrintRegretHistogram(shareTreatmentsList,filename, MC_replicates, waves, columnames)
+  }      
 }
 
 
 
-PrintRegretTable = function(RegretTable,NN,filename){
+PrintRegretTable = function(RegretTable,filename, MC_replicates, waves){
     #write_csv(RegretTable, paste("../Figures/", filename, "RegretTable.csv", sep=""))
-    labtext=paste(filename,"_", paste(NN, collapse="_"),"_","RegretTable", sep="")
-    rows=dim(RegretTable)[1]
+    labtext=paste(filename,"_", 
+                  #paste(NN, collapse="_"),"_",
+                  "RegretTable", sep="")
+    rows=dim(RegretTable)[1]-2
+    cols=dim(RegretTable)[2]
+    digs=matrix(c(rep(3, rows*(cols+1)), rep(0,2*(cols+1))), nrow=rows+2, ncol=cols+1, byrow=T) #controling digits
+    
     print(xtable(RegretTable, type = "latex",
-                 caption=paste("Performance of alternative experimental designs, ",
-                               R, " replications, wave sizes ", paste(NN, collapse = ", "), ".", sep=""),
+                 caption=paste(MC_replicates, " replications, ",
+                               waves, " waves.", sep=""),
                  label=paste("tab:", labtext, sep=""),
-                 digits=3),
-          hline.after = c(-1,0,rows/2,rows), #horizontal lines
+                 digits=digs),
+          hline.after = c(-1,0,rows/2,rows,rows+2), #horizontal lines
           file = paste("../Figures/Simulations/", labtext,".tex", sep=""),
           caption.placement = "top",
           latex.environments = "center", #centering the table and caption
@@ -125,7 +152,38 @@ PrintRegretTable = function(RegretTable,NN,filename){
 
 
 
+PrintRegretHistogram=function(shareTreatmentsList,filename, MC_replicates, waves, columnames) {
+    for (i in 1:length(columnames)) {
+        pathname=paste("../Figures/Simulations/Histograms/",
+                       filename,"_", columnames[i],
+                       "_RegretHistogram.pdf", sep="")
+        
+        shareTreatments=shareTreatmentsList[[i]]
+        
+        histTibble=tibble(regret=as.double(names(shareTreatments[[1]])),
+                           non_adaptive= as.double(shareTreatments[[1]] / MC_replicates),
+                           modifiedThompson= as.double(shareTreatments[[4]] / MC_replicates)) #careful about coordinates being right when you change methods!
 
+        ggplot(histTibble, aes(x=regret, y=modifiedThompson)) +
+            geom_point(color=fillcolor, size=1) +
+            geom_segment(aes(x=regret,xend=regret, y=non_adaptive,  yend=modifiedThompson), color=fillcolor, size=.5) +
+            scale_y_continuous(limits=c(0,1)) +
+            #coord_cartesian(ylim=c(0,1)) +
+            theme_light() +
+            theme(#panel.background = element_rect(fill = backcolor, colour = NA),
+                #panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                axis.ticks.x=element_blank(),
+                axis.ticks.y=element_blank(),
+                plot.caption=element_text(size=7)) +
+            labs(title=paste(columnames[[i]], ", ", waves, " waves", sep=""),
+                 x="Regret", y="Share of simulations")
+        
+
+        
+        ggsave(pathname, width = 4, height = 3)
+    }
+}
 
 
 
