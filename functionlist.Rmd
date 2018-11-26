@@ -3,10 +3,10 @@
 ### calibratedSimulationFunctions.R 
 DesignTable : function (DataList, methods, MC_replicates = 100, columnames = NULL, 
     filename = NULL)  
-ExpectedRegret : function (NN, C, theta, methods, R)  
+ExpectedRegret : function (wavesizes, C, theta, methods, R)  
 PrintRegretHistogram : function (shareTreatmentsList, filename, MC_replicates, waves, columnames)  
 PrintRegretTable : function (RegretTable, filename, MC_replicates, waves)  
-SimulateTWaveDesign : function (NN, C, theta, method = "modifiedthompson")  
+SimulateTWaveDesign : function (wavesizes, C, theta, method = "modifiedthompson")  
 
 
 
@@ -63,18 +63,22 @@ SimplexPanel : function (N, alternativeplot = FALSE)
 
 #  ThompsonHierarchicalFunctions 
 
-### ThompsonCalibration.R 
-RunAllSimulationsThompson : function (DataList, T = 4, nt = 36, RR = 1000)  
-SimulateTWaveDesignThompson : function (Nt, C, theta, PX)  
+### calibratedSimulationFunctionsCovariates.R 
+DesignTableCovariates : function (DataList, methods, MC_replicates = 100, columnames = NULL, 
+    filename = NULL)  
+ExpectedRegretCovariates : function (wavesizes, C, theta, PX, methods, R)  
+SimulateTWaveDesignCovariates : function (wavesizes, C, theta, PX, method = "stratified")  
 
 
 
 ### ThompsonHierarchical.R 
 betabinomialMLE : function (NN, SS)  
+DtchoiceCovariates : function (Y, D, X, k, nx, Xt, method = "stratified")  
 DtchoiceThompson : function (Y, D, k, Nt)  
-DtchoiceThompsonAveraged : function (Y, D, k, Nt, RR)  
 DtchoiceThompsonHierarchical : function (Y, D, X, k, nx, Xt)  
-DtchoiceThompsonHierarchicalAveraged : function (Y, D, X, k, nx, Xt, RR)  
+DtchoiceThompsonHierarchicalAlternating : function (Y, D, X, k, nx, Xt)  
+DtchoiceThompsonHierarchicalModified : function (Y, D, X, k, nx, Xt, RR)  
+DtchoiceThompsonModified : function (Y, D, k, Nt, RR)  
 hierarchicalPosteriorDraw : function (NN, SS, LLH)  
 hierarchicalPosteriorMean : function (Y, D, X, draws = 1000)  
 SimulateX : function (PX, N)  

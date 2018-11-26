@@ -1,3 +1,0 @@
-waves  10 
-
- samplesize 1.5

@@ -51,7 +51,7 @@ server <- function(input, output, session) {
     #calculating treatment assignment
     if (priordata$nx > 1) {
       newwave$Dstar=as.integer(
-                  DtchoiceThompsonHierarchicalAveraged(priordata$Y,priordata$D,priordata$X, #outcomes, treatments, and covariates thus far
+                  DtchoiceThompsonHierarchicalModified(priordata$Y,priordata$D,priordata$X, #outcomes, treatments, and covariates thus far
                                                 priordata$k,priordata$nx, #number of treatments and number of strata
                                                 newwave$Xt, RR=input$RR))
       v$newwave =rename(newwave,
@@ -64,7 +64,7 @@ server <- function(input, output, session) {
         spread(treatment, count)
     } else {
       newwave$Dstar=as.integer(
-                    DtchoiceThompsonAveraged(priordata$Y,priordata$D, #outcomes and treatments thus far
+                    DtchoiceThompsonModified(priordata$Y,priordata$D, #outcomes and treatments thus far
                                      priordata$k, #number of treatments
                                      nrow(newwave),
                                      RR=input$RR))

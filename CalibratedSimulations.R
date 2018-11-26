@@ -5,48 +5,54 @@ source("OptimalAssignmentFunctions/SimulatedWelfareFunctions.R")
 source("CalibratedSimulationFunctions/ReadData.R")
 source("CalibratedSimulationFunctions/calibratedSimulationFunctions.R")
 
+source("ThompsonHierarchicalFunctions/ThompsonHierarchical.R")
+source("ThompsonHierarchicalFunctions/calibratedSimulationFunctionsCovariates.R")
 
-backcolor="azure2" #background color for plots
-gridcolor="azure1"
+#backcolor="azure2" #background color for plots
+#gridcolor="azure1"
 fillcolor="skyblue4"
+
+DoNoCovariates=F
+DoCovariates=T
 
 
 DataList=ReadAllData(printFigures=T)
-
-#for each elemant of DataList (each application), extract the theta sub-element, and filename sub-element
-#ThetaList=map(DataList, "theta")
+#for each elemant of DataList (each application), extract the filename sub-element
 columnames=map(DataList, "filename")   
 
-#size of waves, and number of replications
-#NN=rep(400,2)
-MC_replicates=10000
+#number of replications
+MC_replicates=5000
 
-#which methods of treatment assignment to simulate
-#indices corresponding to:
-# c("conventional",
-#   "optimalhandpicked",
-#   "optimalrandom",
-#   "optimalhat",
-#   "optimalhatrandom",
-#   "optimal",
-#   "besthalf",
-#   "thompson",
-#   "modifiedthompson")   
-methods=c(1,7,8,9)
-
-
-for (Mult in c(.5,1)) { # multiples of original sample size
-  for (waves in c(2,4,10)) { # number of waves
-      for (i in 1:length(DataList)) {
-          DataList[[i]]$NtN = rep( floor(DataList[[i]]$N * Mult / waves) ,waves) 
+if (DoNoCovariates) {
+    #which methods of treatment assignment to simulate
+    methods=c(1,7,8,9)
+    #Simulations without covariates
+    for (Mult in c(.5,1)) { # multiples of original sample size
+      for (waves in c(2,4,10)) { # number of waves
+          for (i in 1:length(DataList)) {
+              DataList[[i]]$wavesizes = rep( floor(DataList[[i]]$N * Mult / waves) ,waves) 
+          }
+          DesignTable(DataList,methods,MC_replicates,columnames,filename=paste("test_CalibratedSimulations_T_", waves, "_" ,Mult, sep=""))
       }
-      DesignTable(DataList,methods,MC_replicates,columnames,filename=paste("Nov17_CalibratedSimulations_T_", waves, "_" ,Mult, sep=""))
-  }
+    }
 }
 
 
 
 
+if (DoCovariates) {
+    #Simulations with covariates
+    methods=c(1,2,3,4)
+    
+    for (Mult in c(.5,1)) { # multiples of original sample size
+      for (waves in c(2,4,10)) { # number of waves
+        for (i in 1:length(DataList)) {
+          DataList[[i]]$wavesizes = rep( floor(DataList[[i]]$N * Mult / waves) ,waves) 
+        }
+        DesignTableCovariates(DataList,methods,MC_replicates,columnames,filename=paste("test_Covariates_CalibratedSimulations_T_", waves, "_" ,Mult, sep=""))
+      }
+    }
+}
 
 
 

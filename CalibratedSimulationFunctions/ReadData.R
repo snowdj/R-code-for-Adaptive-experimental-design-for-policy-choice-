@@ -73,10 +73,11 @@ DataToTheta=function(filename, dataname, k, strataVars, outcomename,treatmentnam
 #produce figures and tables of calibrated parameter values
 PrintDataFigures=function(stratasizes,sumstats,theta, filename,dataname,outcomename,treatmentname, k){
     
-    # Footer1Text=paste("Average of ", outcomename,
-    #                  "\nfor each value of the treatment (", treatmentname,
-    #                  "),\nand each value of ", covariatesnames, ".", sep="")
 
+    FooterText=paste("Outcome: ", outcomename, 
+                   "\nTreatments: ", treatmentname, 
+                   ".", sep="")
+  
   
     #careful: we are dropping "missing" strata from figures!
     ggplot(drop_na(stratasizes),aes(x=factor(strata, levels = rev(levels(strata))), y=n)) +
@@ -86,11 +87,10 @@ PrintDataFigures=function(stratasizes,sumstats,theta, filename,dataname,outcomen
             panel.grid.major = element_blank(),
             panel.grid.minor = element_blank()) +
         coord_flip() +
-        labs(title="Strata size",
-             subtitle=dataname,
+        labs(title=dataname,
              x="Stratum", y="Number of observations")
     
-    #ggsave(paste("../Figures/Applications/", filename, "strata.pdf", sep=""), width = 4, height =1+ .3*length(levels(sumstats$strata)))
+    ggsave(paste("../Figures/Applications/", filename, "strata.pdf", sep=""), width = 4, height =1+ .3*length(levels(sumstats$strata)))
     
     xmax=1
     if (max(sumstats$meanout) < .5) xmax= max(sumstats$meanout)+.02
@@ -109,17 +109,14 @@ PrintDataFigures=function(stratasizes,sumstats,theta, filename,dataname,outcomen
             panel.grid.minor = element_blank(),
             axis.ticks.x=element_blank(),
             plot.caption=element_text(size=7)) +
-        labs(title=paste("Average of ", outcomename, " by treatment", sep=""),
-             subtitle=dataname,
-             x="Mean outcome", y="Treatment")#,
-             #caption=Footer1Text)
+        labs(title=dataname,
+             x="Mean outcome", y="Treatment",
+             caption=FooterText)
     
-    #ggsave(paste("../Figures/Applications/", filename, ".pdf", sep=""), width = 4, height = 0.15*length(levels(sumstats$strata))*k+1.5)
+    ggsave(paste("../Figures/Applications/", filename, ".pdf", sep=""), width = 4, height = 0.15*length(levels(sumstats$strata))*k+1.5)
 
     
-    FooterText=paste("Outcome: ", outcomename, 
-                     "\nTreatments: ", treatmentname, 
-                     ".", sep="")
+
     xmax=1
     if (max(theta$meanout) < .3) xmax= max(theta$meanout)+.02
     

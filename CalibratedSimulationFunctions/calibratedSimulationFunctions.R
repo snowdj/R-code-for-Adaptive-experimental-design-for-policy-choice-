@@ -10,27 +10,27 @@ alpha0=1
 
 
 
-SimulateTWaveDesign=function(NN,C,theta, method="modifiedthompson"){
+SimulateTWaveDesign=function(wavesizes,C,theta, method="modifiedthompson"){
   k=length(theta) #number of treatment arms
   theta=sample(theta) #randomly permute so as not to privilege any options in policy choice
   
   if (method=="conventional") {
-      D=EqualAssignment(sum(NN),k)
+      D=EqualAssignment(sum(wavesizes),k)
       Y=simulatedSample(D,theta) #bernoulli draws with probability theta(D) - drawing from sample distribution
   } else {
-      T=length(NN) #number of waves
-      MM=cumsum(NN)
+      waves=length(wavesizes) #number of waves
+      MM=cumsum(wavesizes)
       
-      D=rep(0,MM[T])
-      Y=rep(0,MM[T])
+      D=rep(0,MM[waves])
+      Y=rep(0,MM[waves])
       
-      Dt=EqualAssignment(NN[1],k)
-      D[1:NN[1]]=Dt
-      Y[1:NN[1]]=simulatedSample(Dt,theta) #bernoulli draws with probability theta(D) - drawing from sample distribution
+      Dt=EqualAssignment(wavesizes[1],k)
+      D[1:wavesizes[1]]=Dt
+      Y[1:wavesizes[1]]=simulatedSample(Dt,theta) #bernoulli draws with probability theta(D) - drawing from sample distribution
   
-      for (t in 2:T) {
+      for (t in 2:waves) {
         posterior=betaposterior(D[1:MM[t-1]],Y[1:MM[t-1]])
-        Dt=Dtchoice(posterior$A,posterior$B,C, NN[t], method)
+        Dt=Dtchoice(posterior$A,posterior$B,C, wavesizes[t], method)
         D[(MM[t-1]+1):MM[t]]=Dt
         Y[(MM[t-1]+1):MM[t]]=simulatedSample(Dt,theta) #bernoulli draws with probability theta(D) - drawing from sample distribution
       }
@@ -39,7 +39,7 @@ SimulateTWaveDesign=function(NN,C,theta, method="modifiedthompson"){
 }
 
 
-ExpectedRegret=function(NN,C,theta,methods,R){
+ExpectedRegret=function(wavesizes,C,theta,methods,R){
   k=length(theta) #number of treatment arms
 
   #parallelize simulations
@@ -68,28 +68,28 @@ ExpectedRegret=function(NN,C,theta,methods,R){
       
   for (i in methods) { #pick here which methods to simulate
       sink("status_ExpectedRegret.txt") #status file to track computations
-      cat("waves ", NN, "\n", 
+      cat("waves ", wavesizes, "\n", 
           "theta", theta, "\n",
           "method", Methods[i])
       sink()  
     #if (i==9) browser()  
-      
-    regret2Wave=parSapply(clust, 1:R, function(j) SimulateTWaveDesign(NN,C,theta, Methods[i]))
+    
+    regretTWave=parSapply(clust, 1:R, function(j) SimulateTWaveDesign(wavesizes,C,theta, Methods[i]))
     regretTable=rbind(get0("regretTable"),
                       tibble(Statistic=paste("Regret, ", MethodNames[i], sep=""),
-                                Value=mean(regret2Wave[1,])))
+                                Value=mean(regretTWave[1,])))
     shareoptTable=rbind(get0("shareoptTable"),
                         tibble(Statistic=paste("Share optimal, ", MethodNames[i], sep=""),
-                                Value=mean(regret2Wave[1,]==0)))
+                                Value=mean(regretTWave[1,]==0)))
     
-    shareTreatments[[Methods[i]]]=table(factor(regret2Wave[1,], levels=max(theta)-theta)) #store shares assigned to each treatment for method i
+    shareTreatments[[Methods[i]]]=table(factor(regretTWave[1,], levels=max(theta)-theta)) #store shares assigned to each treatment for method i
   }
   
  
   stopCluster(clust)
   
   lastrows=tibble(Statistic=c("Units per wave", "Number of treatments"),
-                 Value=c(NN[1], k))
+                 Value=c(wavesizes[1], k))
   tablecolumns=rbind(regretTable, shareoptTable, lastrows)
 
   list(tablecolumns = tablecolumns, shareTreatments=shareTreatments)
@@ -101,7 +101,7 @@ DesignTable=function(DataList,methods,MC_replicates=100,columnames=NULL,filename
 
   # Run Expected Regret simulations for each value of theta    
   ResultsTemp=map(DataList, function(data) 
-                    ExpectedRegret(data$NtN,C=rep(0, length(data$theta)),data$theta,methods,MC_replicates))      
+                    ExpectedRegret(data$wavesizes,C=rep(0, length(data$theta)),data$theta,methods,MC_replicates))      
     
   RegretTableTemp=map(ResultsTemp, "tablecolumns") #extract table columns
   shareTreatmentsList=map(ResultsTemp, "shareTreatments") #extract shares assigned to treatments
@@ -119,30 +119,31 @@ DesignTable=function(DataList,methods,MC_replicates=100,columnames=NULL,filename
   }
   
   #write to tex file
-  waves=length(DataList[[1]]$NtN)
+  waves=length(DataList[[1]]$wavesizes)
   if (!is.null(filename)) {
-      PrintRegretTable(RegretTable,filename, MC_replicates, waves)
+      PrintRegretTable(RegretTable,filename, MC_replicates, waves, length(methods))
       PrintRegretHistogram(shareTreatmentsList,filename, MC_replicates, waves, columnames)
   }      
 }
 
 
 
-PrintRegretTable = function(RegretTable,filename, MC_replicates, waves){
+PrintRegretTable = function(RegretTable,filename, MC_replicates, waves, nmethods){
     #write_csv(RegretTable, paste("../Figures/", filename, "RegretTable.csv", sep=""))
     labtext=paste(filename,"_", 
-                  #paste(NN, collapse="_"),"_",
+                  #paste(wavesizes, collapse="_"),"_",
                   "RegretTable", sep="")
-    rows=dim(RegretTable)[1]-2
+    rows=2*nmethods
+    remainderrows=dim(RegretTable)[1]-rows
     cols=dim(RegretTable)[2]
-    digs=matrix(c(rep(3, rows*(cols+1)), rep(0,2*(cols+1))), nrow=rows+2, ncol=cols+1, byrow=T) #controling digits
+    digs=matrix(c(rep(3, rows*(cols+1)), rep(0,remainderrows*(cols+1))), nrow=rows+remainderrows, ncol=cols+1, byrow=T) #controling digits
     
     print(xtable(RegretTable, type = "latex",
                  caption=paste(MC_replicates, " replications, ",
                                waves, " waves.", sep=""),
                  label=paste("tab:", labtext, sep=""),
                  digits=digs),
-          hline.after = c(-1,0,rows/2,rows,rows+2), #horizontal lines
+          hline.after = c(-1,0,nmethods,rows,rows+remainderrows), #horizontal lines
           file = paste("../Figures/Simulations/", labtext,".tex", sep=""),
           caption.placement = "top",
           latex.environments = "center", #centering the table and caption
