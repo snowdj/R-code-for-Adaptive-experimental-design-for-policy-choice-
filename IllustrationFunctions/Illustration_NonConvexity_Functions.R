@@ -1,51 +1,23 @@
-rm(list = ls())
-#setwd(dirname(parent.frame(2)$ofile))
-source("../CoreFunctions/welfareplotsFunctions.R")
-source("../CoreFunctions/welfareplotsGraphics.R")
-
-backcolor="azure2" #background color for plots
-gridcolor="azure1"
-fillcolor="skyblue4"
-
 stylizedDesign=function(A,B,C, N){
-  USimplex=UoverSimplex(A,B,C,N,NULL, U)
+  USimplex=UoverSimplex(A,B,C,N, U)
   #USimplex$deltaU=USimplex$U-c(USimplex$U[1],USimplex$U[1:N])
   
   ggplot(USimplex[-1,], aes(x=n1, y=U)) +
     geom_line(size=1, color= fillcolor)+
     xlab(expression(n[1])) + ylab("ESWF") +
     scale_x_continuous(breaks = seq(0,N,5)) +
+    theme_light() +
     theme(panel.grid.minor = element_blank(),
-          panel.grid.major = element_line(colour=gridcolor),
-          panel.background = element_rect(fill = backcolor, colour = NA),
+          #panel.grid.major = element_line(colour=gridcolor),
+          #panel.background = element_rect(fill = backcolor, colour = NA),
           axis.line.x = element_line(size = 0.5, colour = "black"))
     
   
-  filename=paste(c("../../Figures/ValueofInfo/ESWF_prior", A[1], B[1],"_stylized.pdf"), collapse="") 
+  filename=paste(c("../Figures/ValueofInfo/ESWF_prior", A[1], B[1],"_stylized.pdf"), collapse="") 
   
   ggsave(filename, width = 5, height = 4)
 }
-
-
-#2 treatment values
-#de-facto degenerate prior for treatment 2
-N=20
-C=c(0,0)
-
-
-A=c(1,10000)
-B=c(5,10000)
-stylizedDesign(A,B,C,N)
-
-A=c(5,10000)
-B=c(1,10000)
-stylizedDesign(A,B,C,N)
-
-A=c(3,10000)
-B=c(3,10000)
-stylizedDesign(A,B,C,N)
-
-
+ 
 
 #and now for power calculations based on the same designs and prior means
 powerCalc=function(theta, N){
@@ -66,21 +38,16 @@ powerCalc=function(theta, N){
     geom_line(size=1, color= "skyblue4")+
     xlab(expression(n[1])) + ylab("power") +
     scale_x_continuous(breaks = seq(0,N,5)) +
+    theme_light() +
     theme(panel.grid.minor = element_blank(),
-          panel.grid.major = element_line(colour=gridcolor),
-          panel.background = element_rect(fill = backcolor, colour = NA),
+          #panel.grid.major = element_line(colour=gridcolor),
+          #panel.background = element_rect(fill = backcolor, colour = NA),
           axis.line.x = element_line(size = 0.5, colour = "black"))
   
-  filename=paste(c("../../Figures/ValueofInfo/powerCalc", round(100*theta[1]),"_stylized.pdf"), collapse="") 
+  filename=paste(c("../Figures/ValueofInfo/powerCalc", round(100*theta[1]),"_stylized.pdf"), collapse="") 
   
   ggsave(filename, width = 5, height = 4)
 }
-
-powerCalc(c(1/6, .5),N)
-powerCalc(c(5/6, .5),N)
-powerCalc(c(.5, .5),N)
-
-
 
 
 
@@ -97,17 +64,14 @@ MSEcalc=function(theta, N){
     geom_line(size=1, color= "skyblue4")+
     xlab(expression(n[1])) + ylab("-MSE") +
     scale_x_continuous(breaks = seq(0,N,5)) +
+    theme_light() +
     theme(panel.grid.minor = element_blank(),
-          panel.grid.major = element_line(colour=gridcolor),
-          panel.background = element_rect(fill = backcolor, colour = NA),
+          #panel.grid.major = element_line(colour=gridcolor),
+          #panel.background = element_rect(fill = backcolor, colour = NA),
           axis.line.x = element_line(size = 0.5, colour = "black"))
   
-  filename=paste(c("../../Figures/ValueofInfo/MSECalc", round(100*theta[1]),"_stylized.pdf"), collapse="") 
+  filename=paste(c("../Figures/ValueofInfo/MSECalc", round(100*theta[1]),"_stylized.pdf"), collapse="") 
   
   ggsave(filename, width = 5, height = 4)
 }
-
-MSEcalc(c(1/6, .5),N)
-MSEcalc(c(5/6, .5),N)
-MSEcalc(c(.5, .5),N)
 

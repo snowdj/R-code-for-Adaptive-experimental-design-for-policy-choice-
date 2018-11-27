@@ -1,0 +1,412 @@
+debug at #2: Rprof("covariateTimes.Rprof")
+Called from: DtchoiceCovariates(Y[previous], D[previous], X[previous], k, 
+    nx, X[current], method)
+
+ stratified 
+$by.self
+                            self.time self.pct total.time total.pct
+"mapply"                         0.70    37.63       1.14     61.29
+"runif"                          0.28    15.05       0.28     15.05
+"<Anonymous>"                    0.12     6.45       0.16      8.60
+"hierarchicalPosteriorMean"      0.10     5.38       1.74     93.55
+"rchisq"                         0.08     4.30       0.08      4.30
+"unique.default"                 0.08     4.30       0.08      4.30
+"lengths"                        0.06     3.23       0.06      3.23
+"unlist"                         0.06     3.23       0.06      3.23
+"findLocals1"                    0.04     2.15       0.06      3.23
+"as.list"                        0.04     2.15       0.04      2.15
+"isFALSE"                        0.04     2.15       0.04      2.15
+"eval"                           0.02     1.08       1.86    100.00
+"unique"                         0.02     1.08       0.16      8.60
+"cmp"                            0.02     1.08       0.12      6.45
+"match.fun"                      0.02     1.08       0.04      2.15
+"StratifiedAssignment"           0.02     1.08       0.04      2.15
+"%in%"                           0.02     1.08       0.02      1.08
+"browser"                        0.02     1.08       0.02      1.08
+"cb$putcode"                     0.02     1.08       0.02      1.08
+"get"                            0.02     1.08       0.02      1.08
+"is.function"                    0.02     1.08       0.02      1.08
+"length"                         0.02     1.08       0.02      1.08
+"paste0"                         0.02     1.08       0.02      1.08
+"setTimeLimit"                   0.02     1.08       0.02      1.08
+
+$by.total
+                                total.time total.pct self.time self.pct
+"eval"                                1.86    100.00      0.02     1.08
+".f"                                  1.86    100.00      0.00     0.00
+"DesignTableCovariates"               1.86    100.00      0.00     0.00
+"ExpectedRegretCovariates"            1.86    100.00      0.00     0.00
+"map"                                 1.86    100.00      0.00     0.00
+"SimulateTWaveDesignCovariates"       1.86    100.00      0.00     0.00
+"source"                              1.86    100.00      0.00     0.00
+"withVisible"                         1.86    100.00      0.00     0.00
+"hierarchicalPosteriorMean"           1.74     93.55      0.10     5.38
+"mapply"                              1.14     61.29      0.70    37.63
+"runif"                               0.28     15.05      0.28    15.05
+"doTryCatch"                          0.22     11.83      0.00     0.00
+"simplify2array"                      0.22     11.83      0.00     0.00
+"tryCatch"                            0.22     11.83      0.00     0.00
+"tryCatchList"                        0.22     11.83      0.00     0.00
+"tryCatchOne"                         0.22     11.83      0.00     0.00
+"cmpfun"                              0.18      9.68      0.00     0.00
+"compiler:::tryCmpfun"                0.18      9.68      0.00     0.00
+"<Anonymous>"                         0.16      8.60      0.12     6.45
+"unique"                              0.16      8.60      0.02     1.08
+"cmp"                                 0.12      6.45      0.02     1.08
+"cmpCall"                             0.12      6.45      0.00     0.00
+"genCode"                             0.12      6.45      0.00     0.00
+"h"                                   0.12      6.45      0.00     0.00
+"tryInline"                           0.12      6.45      0.00     0.00
+"rchisq"                              0.08      4.30      0.08     4.30
+"unique.default"                      0.08      4.30      0.08     4.30
+"cmpForBody"                          0.08      4.30      0.00     0.00
+"cmpPrim2"                            0.08      4.30      0.00     0.00
+"cmpSymbolAssign"                     0.08      4.30      0.00     0.00
+"lengths"                             0.06      3.23      0.06     3.23
+"unlist"                              0.06      3.23      0.06     3.23
+"findLocals1"                         0.06      3.23      0.04     2.15
+"cmpSubsetDispatch"                   0.06      3.23      0.00     0.00
+"findLocalsList"                      0.06      3.23      0.00     0.00
+"findLocalsList1"                     0.06      3.23      0.00     0.00
+"FUN"                                 0.06      3.23      0.00     0.00
+"funEnv"                              0.06      3.23      0.00     0.00
+"lapply"                              0.06      3.23      0.00     0.00
+"make.functionContext"                0.06      3.23      0.00     0.00
+"as.list"                             0.04      2.15      0.04     2.15
+"isFALSE"                             0.04      2.15      0.04     2.15
+"match.fun"                           0.04      2.15      0.02     1.08
+"StratifiedAssignment"                0.04      2.15      0.02     1.08
+".rs.valueFromStr"                    0.04      2.15      0.00     0.00
+".rs.withTimeLimit"                   0.04      2.15      0.00     0.00
+"betabinomialMLE"                     0.04      2.15      0.00     0.00
+"cmpComplexAssign"                    0.04      2.15      0.00     0.00
+"DtchoiceCovariates"                  0.04      2.15      0.00     0.00
+"%in%"                                0.02      1.08      0.02     1.08
+"browser"                             0.02      1.08      0.02     1.08
+"cb$putcode"                          0.02      1.08      0.02     1.08
+"get"                                 0.02      1.08      0.02     1.08
+"is.function"                         0.02      1.08      0.02     1.08
+"length"                              0.02      1.08      0.02     1.08
+"paste0"                              0.02      1.08      0.02     1.08
+"setTimeLimit"                        0.02      1.08      0.02     1.08
+".Call"                               0.02      1.08      0.00     0.00
+".rs.valueContents"                   0.02      1.08      0.00     0.00
+".rs.valueDescription"                0.02      1.08      0.00     0.00
+"capture.output"                      0.02      1.08      0.00     0.00
+"cb$makelabel"                        0.02      1.08      0.00     0.00
+"cmpBuiltinArgs"                      0.02      1.08      0.00     0.00
+"cmpWhileBody"                        0.02      1.08      0.00     0.00
+"constantFold"                        0.02      1.08      0.00     0.00
+"constantFoldCall"                    0.02      1.08      0.00     0.00
+"do.call"                             0.02      1.08      0.00     0.00
+"evalVis"                             0.02      1.08      0.00     0.00
+"getInlineHandler"                    0.02      1.08      0.00     0.00
+"mayCallBrowser"                      0.02      1.08      0.00     0.00
+"mayCallBrowserList"                  0.02      1.08      0.00     0.00
+"nlminb"                              0.02      1.08      0.00     0.00
+"objective"                           0.02      1.08      0.00     0.00
+"str.default"                         0.02      1.08      0.00     0.00
+"str"                                 0.02      1.08      0.00     0.00
+"strSub"                              0.02      1.08      0.00     0.00
+"try"                                 0.02      1.08      0.00     0.00
+
+$sample.interval
+[1] 0.02
+
+$sampling.time
+[1] 1.86
+
+Called from: DtchoiceCovariates(Y[previous], D[previous], X[previous], k, 
+    nx, X[current], method)
+
+ thompson 
+$by.self
+                            self.time self.pct total.time total.pct
+"mapply"                         0.86    30.50       1.94     68.79
+"runif"                          0.42    14.89       0.42     14.89
+"unique"                         0.22     7.80       0.66     23.40
+"hierarchicalPosteriorMean"      0.18     6.38       2.14     75.89
+"unique.default"                 0.18     6.38       0.26      9.22
+"lengths"                        0.18     6.38       0.18      6.38
+"hierarchicalPosteriorDraw"      0.14     4.96       0.60     21.28
+"unlist"                         0.14     4.96       0.14      4.96
+"<Anonymous>"                    0.12     4.26       0.20      7.09
+"is.factor"                      0.08     2.84       0.08      2.84
+"simplify2array"                 0.04     1.42       0.84     29.79
+"isFALSE"                        0.04     1.42       0.04      1.42
+"rchisq"                         0.04     1.42       0.04      1.42
+"browser"                        0.02     0.71       0.04      1.42
+"cmpCall"                        0.02     0.71       0.04      1.42
+".classDefEnv"                   0.02     0.71       0.02      0.71
+"c"                              0.02     0.71       0.02      0.71
+"findCenvVar"                    0.02     0.71       0.02      0.71
+"lapply"                         0.02     0.71       0.02      0.71
+"match.fun"                      0.02     0.71       0.02      0.71
+"paste"                          0.02     0.71       0.02      0.71
+"sys.function"                   0.02     0.71       0.02      0.71
+
+$by.total
+                                total.time total.pct self.time self.pct
+".f"                                  2.82    100.00      0.00     0.00
+"DesignTableCovariates"               2.82    100.00      0.00     0.00
+"eval"                                2.82    100.00      0.00     0.00
+"ExpectedRegretCovariates"            2.82    100.00      0.00     0.00
+"map"                                 2.82    100.00      0.00     0.00
+"SimulateTWaveDesignCovariates"       2.82    100.00      0.00     0.00
+"source"                              2.82    100.00      0.00     0.00
+"withVisible"                         2.82    100.00      0.00     0.00
+"hierarchicalPosteriorMean"           2.14     75.89      0.18     6.38
+"mapply"                              1.94     68.79      0.86    30.50
+"simplify2array"                      0.84     29.79      0.04     1.42
+"DtchoiceCovariates"                  0.68     24.11      0.00     0.00
+"unique"                              0.66     23.40      0.22     7.80
+"DtchoiceThompsonHierarchical"        0.64     22.70      0.00     0.00
+"hierarchicalPosteriorDraw"           0.60     21.28      0.14     4.96
+"runif"                               0.42     14.89      0.42    14.89
+"unique.default"                      0.26      9.22      0.18     6.38
+"<Anonymous>"                         0.20      7.09      0.12     4.26
+"lengths"                             0.18      6.38      0.18     6.38
+"unlist"                              0.14      4.96      0.14     4.96
+"doTryCatch"                          0.12      4.26      0.00     0.00
+"tryCatch"                            0.12      4.26      0.00     0.00
+"tryCatchList"                        0.12      4.26      0.00     0.00
+"tryCatchOne"                         0.12      4.26      0.00     0.00
+"is.factor"                           0.08      2.84      0.08     2.84
+".rs.valueContents"                   0.06      2.13      0.00     0.00
+".rs.valueFromStr"                    0.06      2.13      0.00     0.00
+".rs.withTimeLimit"                   0.06      2.13      0.00     0.00
+"capture.output"                      0.06      2.13      0.00     0.00
+"do.call"                             0.06      2.13      0.00     0.00
+"evalVis"                             0.06      2.13      0.00     0.00
+"str.default"                         0.06      2.13      0.00     0.00
+"str"                                 0.06      2.13      0.00     0.00
+"strSub"                              0.06      2.13      0.00     0.00
+"try"                                 0.06      2.13      0.00     0.00
+"isFALSE"                             0.04      1.42      0.04     1.42
+"rchisq"                              0.04      1.42      0.04     1.42
+"browser"                             0.04      1.42      0.02     0.71
+"cmpCall"                             0.04      1.42      0.02     0.71
+".Call"                               0.04      1.42      0.00     0.00
+"betabinomialMLE"                     0.04      1.42      0.00     0.00
+"cmp"                                 0.04      1.42      0.00     0.00
+"cmpfun"                              0.04      1.42      0.00     0.00
+"compiler:::tryCmpfun"                0.04      1.42      0.00     0.00
+"genCode"                             0.04      1.42      0.00     0.00
+"h"                                   0.04      1.42      0.00     0.00
+"NextMethod"                          0.04      1.42      0.00     0.00
+"nlminb"                              0.04      1.42      0.00     0.00
+"objective"                           0.04      1.42      0.00     0.00
+"str.data.frame"                      0.04      1.42      0.00     0.00
+"tryInline"                           0.04      1.42      0.00     0.00
+".classDefEnv"                        0.02      0.71      0.02     0.71
+"c"                                   0.02      0.71      0.02     0.71
+"findCenvVar"                         0.02      0.71      0.02     0.71
+"lapply"                              0.02      0.71      0.02     0.71
+"match.fun"                           0.02      0.71      0.02     0.71
+"paste"                               0.02      0.71      0.02     0.71
+"sys.function"                        0.02      0.71      0.02     0.71
+".rs.valueDescription"                0.02      0.71      0.00     0.00
+"cmpBuiltinArgs"                      0.02      0.71      0.00     0.00
+"cmpForBody"                          0.02      0.71      0.00     0.00
+"cmpSymbolAssign"                     0.02      0.71      0.00     0.00
+"cmpWhileBody"                        0.02      0.71      0.00     0.00
+"constantFold"                        0.02      0.71      0.00     0.00
+"constantFoldCall"                    0.02      0.71      0.00     0.00
+"getClassDef"                         0.02      0.71      0.00     0.00
+"getFoldFun"                          0.02      0.71      0.00     0.00
+"getInlineInfo"                       0.02      0.71      0.00     0.00
+"is"                                  0.02      0.71      0.00     0.00
+"isBaseVar"                           0.02      0.71      0.00     0.00
+"match.call"                          0.02      0.71      0.00     0.00
+"matrix"                              0.02      0.71      0.00     0.00
+"modifyList"                          0.02      0.71      0.00     0.00
+"paste0"                              0.02      0.71      0.00     0.00
+"stopifnot"                           0.02      0.71      0.00     0.00
+
+$sample.interval
+[1] 0.02
+
+$sampling.time
+[1] 2.82
+
+Called from: DtchoiceCovariates(Y[previous], D[previous], X[previous], k, 
+    nx, X[current], method)
+
+ modifiedthompson 
+$by.self
+                            self.time self.pct total.time total.pct
+"mapply"                         1.46    35.10       3.06     73.56
+"<Anonymous>"                    0.42    10.10       0.46     11.06
+"unique"                         0.30     7.21       0.64     15.38
+"hierarchicalPosteriorDraw"      0.28     6.73       1.96     47.12
+"runif"                          0.28     6.73       0.28      6.73
+"unique.default"                 0.24     5.77       0.26      6.25
+"unlist"                         0.22     5.29       0.22      5.29
+"hierarchicalPosteriorMean"      0.18     4.33       2.08     50.00
+"rchisq"                         0.18     4.33       0.18      4.33
+"simplify2array"                 0.10     2.40       0.96     23.08
+"isFALSE"                        0.10     2.40       0.14      3.37
+"lengths"                        0.08     1.92       0.08      1.92
+"c"                              0.06     1.44       0.06      1.44
+"is.na"                          0.04     0.96       0.04      0.96
+"match.fun"                      0.04     0.96       0.04      0.96
+"%in%"                           0.02     0.48       0.02      0.48
+"as.list.default"                0.02     0.48       0.02      0.48
+"cbind"                          0.02     0.48       0.02      0.48
+"factor"                         0.02     0.48       0.02      0.48
+"is.factor"                      0.02     0.48       0.02      0.48
+"make.codeBuf"                   0.02     0.48       0.02      0.48
+"names"                          0.02     0.48       0.02      0.48
+"setTimeLimit"                   0.02     0.48       0.02      0.48
+"sum"                            0.02     0.48       0.02      0.48
+
+$by.total
+                                          total.time total.pct self.time
+".f"                                            4.16    100.00      0.00
+"DesignTableCovariates"                         4.16    100.00      0.00
+"eval"                                          4.16    100.00      0.00
+"ExpectedRegretCovariates"                      4.16    100.00      0.00
+"map"                                           4.16    100.00      0.00
+"SimulateTWaveDesignCovariates"                 4.16    100.00      0.00
+"source"                                        4.16    100.00      0.00
+"withVisible"                                   4.16    100.00      0.00
+"mapply"                                        3.06     73.56      1.46
+"hierarchicalPosteriorMean"                     2.08     50.00      0.18
+"DtchoiceCovariates"                            2.06     49.52      0.00
+"DtchoiceThompsonHierarchicalModified"          2.04     49.04      0.00
+"DtchoiceThompsonHierarchicalAlternating"       2.00     48.08      0.00
+"hierarchicalPosteriorDraw"                     1.96     47.12      0.28
+"simplify2array"                                0.96     23.08      0.10
+"unique"                                        0.64     15.38      0.30
+"<Anonymous>"                                   0.46     11.06      0.42
+"runif"                                         0.28      6.73      0.28
+"unique.default"                                0.26      6.25      0.24
+"unlist"                                        0.22      5.29      0.22
+"matrix"                                        0.22      5.29      0.00
+"rchisq"                                        0.18      4.33      0.18
+"isFALSE"                                       0.14      3.37      0.10
+"lengths"                                       0.08      1.92      0.08
+"c"                                             0.06      1.44      0.06
+"doTryCatch"                                    0.06      1.44      0.00
+"tryCatch"                                      0.06      1.44      0.00
+"tryCatchList"                                  0.06      1.44      0.00
+"tryCatchOne"                                   0.06      1.44      0.00
+"is.na"                                         0.04      0.96      0.04
+"match.fun"                                     0.04      0.96      0.04
+"cmpfun"                                        0.04      0.96      0.00
+"compiler:::tryCmpfun"                          0.04      0.96      0.00
+"%in%"                                          0.02      0.48      0.02
+"as.list.default"                               0.02      0.48      0.02
+"cbind"                                         0.02      0.48      0.02
+"factor"                                        0.02      0.48      0.02
+"is.factor"                                     0.02      0.48      0.02
+"make.codeBuf"                                  0.02      0.48      0.02
+"names"                                         0.02      0.48      0.02
+"setTimeLimit"                                  0.02      0.48      0.02
+"sum"                                           0.02      0.48      0.02
+".Call"                                         0.02      0.48      0.00
+".deparseOpts"                                  0.02      0.48      0.00
+".rs.valueDescription"                          0.02      0.48      0.00
+".rs.valueFromStr"                              0.02      0.48      0.00
+".rs.withTimeLimit"                             0.02      0.48      0.00
+"as.list"                                       0.02      0.48      0.00
+"betabinomialMLE"                               0.02      0.48      0.00
+"browser"                                       0.02      0.48      0.00
+"cb$putconst"                                   0.02      0.48      0.00
+"cmp"                                           0.02      0.48      0.00
+"cmpCall"                                       0.02      0.48      0.00
+"cmpCallArgs"                                   0.02      0.48      0.00
+"cmpCallSymFun"                                 0.02      0.48      0.00
+"cmpSymbolAssign"                               0.02      0.48      0.00
+"deparse"                                       0.02      0.48      0.00
+"findLocalsList"                                0.02      0.48      0.00
+"findLocalsList1"                               0.02      0.48      0.00
+"FUN"                                           0.02      0.48      0.00
+"funEnv"                                        0.02      0.48      0.00
+"genCode"                                       0.02      0.48      0.00
+"h"                                             0.02      0.48      0.00
+"lapply"                                        0.02      0.48      0.00
+"make.functionContext"                          0.02      0.48      0.00
+"nlminb"                                        0.02      0.48      0.00
+"objective"                                     0.02      0.48      0.00
+"paste"                                         0.02      0.48      0.00
+"table"                                         0.02      0.48      0.00
+"tryInline"                                     0.02      0.48      0.00
+                                          self.pct
+".f"                                          0.00
+"DesignTableCovariates"                       0.00
+"eval"                                        0.00
+"ExpectedRegretCovariates"                    0.00
+"map"                                         0.00
+"SimulateTWaveDesignCovariates"               0.00
+"source"                                      0.00
+"withVisible"                                 0.00
+"mapply"                                     35.10
+"hierarchicalPosteriorMean"                   4.33
+"DtchoiceCovariates"                          0.00
+"DtchoiceThompsonHierarchicalModified"        0.00
+"DtchoiceThompsonHierarchicalAlternating"     0.00
+"hierarchicalPosteriorDraw"                   6.73
+"simplify2array"                              2.40
+"unique"                                      7.21
+"<Anonymous>"                                10.10
+"runif"                                       6.73
+"unique.default"                              5.77
+"unlist"                                      5.29
+"matrix"                                      0.00
+"rchisq"                                      4.33
+"isFALSE"                                     2.40
+"lengths"                                     1.92
+"c"                                           1.44
+"doTryCatch"                                  0.00
+"tryCatch"                                    0.00
+"tryCatchList"                                0.00
+"tryCatchOne"                                 0.00
+"is.na"                                       0.96
+"match.fun"                                   0.96
+"cmpfun"                                      0.00
+"compiler:::tryCmpfun"                        0.00
+"%in%"                                        0.48
+"as.list.default"                             0.48
+"cbind"                                       0.48
+"factor"                                      0.48
+"is.factor"                                   0.48
+"make.codeBuf"                                0.48
+"names"                                       0.48
+"setTimeLimit"                                0.48
+"sum"                                         0.48
+".Call"                                       0.00
+".deparseOpts"                                0.00
+".rs.valueDescription"                        0.00
+".rs.valueFromStr"                            0.00
+".rs.withTimeLimit"                           0.00
+"as.list"                                     0.00
+"betabinomialMLE"                             0.00
+"browser"                                     0.00
+"cb$putconst"                                 0.00
+"cmp"                                         0.00
+"cmpCall"                                     0.00
+"cmpCallArgs"                                 0.00
+"cmpCallSymFun"                               0.00
+"cmpSymbolAssign"                             0.00
+"deparse"                                     0.00
+"findLocalsList"                              0.00
+"findLocalsList1"                             0.00
+"FUN"                                         0.00
+"funEnv"                                      0.00
+"genCode"                                     0.00
+"h"                                           0.00
+"lapply"                                      0.00
+"make.functionContext"                        0.00
+"nlminb"                                      0.00
+"objective"                                   0.00
+"paste"                                       0.00
+"table"                                       0.00
+"tryInline"                                   0.00
+
+$sample.interval
+[1] 0.02
+
+$sampling.time
+[1] 4.16
+

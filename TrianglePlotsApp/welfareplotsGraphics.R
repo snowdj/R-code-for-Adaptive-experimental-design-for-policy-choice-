@@ -1,7 +1,10 @@
-library(ggplot2)
-library(ggthemes)
+library(tidyverse)
+
+backcolor="azure2" #background color for plots
 
 PlotSimplex=function(A,B,C,N){
+  # can choose Uhat or U for Ufunction. If Uhat, need to Seed.
+  # Seed(A,B)
   USimplex=UoverSimplex(A,B,C,N, U)
   
   Uround=signif(USimplex$U+.0000001,digits=4)
@@ -19,7 +22,7 @@ PlotSimplex=function(A,B,C,N){
     xlab(expression(n[1])) + ylab(expression(n[2])) +
     scale_x_continuous(breaks = 0:N) + scale_y_continuous(breaks = 0:N) +
     theme(panel.grid.minor = element_blank(),
-          panel.background = element_rect(fill = "azure2", colour = NA)) +
+          panel.background = element_rect(fill = backcolor, colour = NA)) +
     guides(fill=FALSE) 
 }
 
@@ -27,8 +30,10 @@ PlotSimplex=function(A,B,C,N){
 
 
 PlotSimplexAlternative=function(A,B,C,N){
+  # can choose Uhat or U for Ufunction. If Uhat, need to Seed.
+  # Seed(A,B)
   USimplex=UoverSimplex(A,B,C,N, U)
-  
+
   Uround=signif(USimplex$U+.0000001,digits=4)
   USimplex$maximizer=(Uround==max(Uround))
   USimplex$fontf=sapply(USimplex$maximizer, function(l) (if (l) "bold" else "plain"))
@@ -42,8 +47,15 @@ PlotSimplexAlternative=function(A,B,C,N){
                           n1=c(N+1, -.5, -.5),
                           n2=c(-.5, N+1, -.5))
   
+
+
+  plotTitle=bquote(alpha ~" = (" ~ 
+                    .(paste(A, collapse=", ")) ~ 
+                    "), "  ~ beta ~ " = ("  ~
+                   .(paste(B, collapse=", ")) ~ 
+                    ")")  
   ggplot(USimplex, aes(x=n1+sqrt(.25)*n2, y=sqrt(.75)*n2)) +
-    geom_point(aes(color = U), size=1.3*sqrt(700/N))  + 
+    geom_point(aes(color = U), size=sqrt(700/N))  + 
     scale_color_gradient( low = "skyblue4", high = "white") +
     geom_text(aes(label=format(U+.0000001, digits=3), #note addition of small number is to generate consistent rounding
                   fontface=fontf),
@@ -54,8 +66,12 @@ PlotSimplexAlternative=function(A,B,C,N){
               aes(label=txt),
               size= 15/N,
               show.legend=FALSE)  +
-    theme_void() + theme(legend.position="none", panel.background = element_rect(fill = "azure2", colour = NA)) +
-    coord_fixed(ratio = 1, xlim = c(-1.5,N+1.5), ylim=c(-1.5, sqrt(.75)*(N+1.5)))
+    theme_void() + 
+    theme(legend.position="none", 
+          panel.background = element_rect(fill = backcolor, colour = NA),
+          plot.title = element_text(hjust = 0.5)) +
+    coord_fixed(ratio = 1, xlim = c(-1.5,N+1.5), ylim=c(-1.5, sqrt(.75)*(N+1.5)))+
+    labs(title=plotTitle)
 }
 
 
@@ -76,10 +92,10 @@ SimplexPanel=function(N, alternativeplot=FALSE){
   for (i in 1:5) {
     if (!alternativeplot){
       PlotSimplex(AM[i,],BM[i,],C,N)
-      filename=paste(c("../Figures/SimplexOrthogonal/ESWF_prior", AM[i,],"sample", N ,".pdf"), collapse="")
+      filename=paste(c("../../Figures/SimplexOrthogonal/ESWF_prior", AM[i,],"sample", N ,".pdf"), collapse="")
     } else {
       PlotSimplexAlternative(AM[i,],BM[i,],C,N)
-      filename=paste(c("../Figures/SimplexTriangle/ESWF_prior", AM[i,],"sample", N ,"Alternative.pdf"), collapse="")          
+      filename=paste(c("../../Figures/SimplexTriangle/ESWF_prior", AM[i,],"sample", N ,"Alternative.pdf"), collapse="")          
     }
     ggsave(filename, width = 5, height = 4)
   }
@@ -89,7 +105,7 @@ SimplexPanel=function(N, alternativeplot=FALSE){
 
 OptimalPilot=function(A,B,C,M, parallel=TRUE){
   
-  pilot=data.frame(n1=0:M, Vn1=rep(0,M+1))
+  pilot=tibble(n1=0:M, Vn1=rep(0,M+1))
   
   if (parallel) {
     library(parallel)
@@ -108,7 +124,8 @@ OptimalPilot=function(A,B,C,M, parallel=TRUE){
     geom_line(size=1, color= "skyblue4")+
     xlab(expression(N[1])) + ylab("ESWF") +
     scale_x_continuous(breaks = 0:M) +
+    theme_light() +
     theme(panel.grid.minor = element_blank(),
-          panel.background = element_rect(fill = "azure2", colour = NA),
+          #panel.background = element_rect(fill = backcolor, colour = NA),
           axis.line.x = element_line(size = 0.5, colour = "black"))
 }

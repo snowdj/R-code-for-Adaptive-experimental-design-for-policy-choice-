@@ -83,35 +83,8 @@ hierarchicalPosteriorMean = function(Y,D,X,
 
 
 
-DtchoiceThompsonHierarchical=function(Y,D,X, #outcomes, treatments, and covariates thus far
-                                      k,nx, #number of treatments and number of strata
-                                      Xt){ # covariates for period t
-  
-    SS=tapply(Y,list(D,X),sum) #matrix of successes
-    NN=tapply(Y,list(D,X),length) #matrix of trials
-    
-    MLE=betabinomialMLE(NN,SS)
-    
-    Nt=length(Xt)
-    Dt=rep(0,Nt)
-    previousD=rep(-Inf, nx) # auxiliary vector to avoid repeat assignments of same D
-    
-    for (i  in 1:Nt) {
-        thetadraw=hierarchicalPosteriorDraw(NN,SS,MLE$LLH)$theta[,Xt[i]] #draw from posterior for covariate value Xt[i]
-        Dt[i]=which.max(thetadraw)
-        if (Dt[i] == previousD[Xt[i]]) {
-            thetadraw[Dt[i]] = -Inf
-            Dt[i]=which.max(thetadraw)
-        }
-        previousD[Xt[i]] = Dt[i]
-    }
-    
-  Dt
-}
-
-
 DtchoiceThompson=function(Y,D, #outcomes and treatments thus far
-                          k, #number of treatments and number of strata
+                          k, #number of treatments
                           Nt){ # number of observations for period t
   
   SS=tapply(Y,D,sum) #vector of successes
@@ -126,7 +99,7 @@ DtchoiceThompson=function(Y,D, #outcomes and treatments thus far
     thetadraw=sapply(1:k, function(j) rbeta(1, A[j], B[j]))
     Dt[i]=which.max(thetadraw)
     if (Dt[i] == previousD) {
-      thetadraw[Dt] = -Inf
+      thetadraw[previousD] = -Inf
       Dt[i]=which.max(thetadraw)
     }
     previousD = Dt[i]
@@ -134,6 +107,119 @@ DtchoiceThompson=function(Y,D, #outcomes and treatments thus far
   
   Dt
 }
+
+
+
+DtchoiceThompsonModified=function(Y,D, #outcomes and treatments thus far
+                                  k, #number of treatments
+                                  Nt, # number of observations for period t
+                                  RR){ #number of replication draws
+  
+  Dt=rep(0,Nt)
+  
+  # Repeat Thompson sampling RR times
+  DtRR=DtchoiceThompson(Y,D,k,Nt*RR)
+  N_Dt_average=tabulate(DtRR,k) / RR #average count for each treatment value and covariate value, replicated sample
+  
+  
+  N_Dt_floor=floor(N_Dt_average) #average number of assignments, rounded down
+  Rem_D = N_Dt_average - N_Dt_floor #remainder
+  n_Rem= Nt - sum(N_Dt_floor) #remaining number of units to be assigned
+  
+  if (n_Rem> 0) {
+    Dt= c(rep(1:k, N_Dt_floor), # assigning each treatment acoording to rounded down average count
+          sample(1:k,size=n_Rem,replace=T, prob=Rem_D)) #remaining units assigned randomly from remain replicate assignments
+  } else {
+    Dt= rep(1:k, N_Dt_floor)
+  }
+  
+  sample(Dt) #randomly permute
+}
+
+
+
+DtchoiceThompsonHierarchical=function(Y,D,X, #outcomes, treatments, and covariates thus far
+                                      k,nx, #number of treatments and number of strata
+                                      Xt){ # covariates for period t
+  
+    SS=tapply(Y,list(D,X),sum) #matrix of successes
+    NN=tapply(Y,list(D,X),length) #matrix of trials
+    
+    MLE=betabinomialMLE(NN,SS)
+    
+    Nt=length(Xt)
+    Dt=rep(0,Nt)
+    for (i  in 1:Nt) {
+        thetadraw=hierarchicalPosteriorDraw(NN,SS,MLE$LLH)$theta[,Xt[i]] #draw from posterior for covariate value Xt[i]
+        Dt[i]=which.max(thetadraw)
+    }
+    
+  Dt
+}
+
+
+
+DtchoiceThompsonHierarchicalAlternating=function(Y,D,X, #outcomes, treatments, and covariates thus far
+                                      k,nx, #number of treatments and number of strata
+                                      Xt){ # covariates for period t
+  
+  SS=tapply(Y,list(D,X),sum) #matrix of successes
+  NN=tapply(Y,list(D,X),length) #matrix of trials
+  
+  MLE=betabinomialMLE(NN,SS)
+  
+  Nt=length(Xt)
+  Dt=rep(0,Nt)
+  previousD=rep(-Inf, nx) # auxiliary vector to avoid repeat assignments of same D
+  
+  for (i  in 1:Nt) {
+    thetadraw=hierarchicalPosteriorDraw(NN,SS,MLE$LLH)$theta[,Xt[i]] #draw from posterior for covariate value Xt[i]
+    Dt[i]=which.max(thetadraw)
+    if (Dt[i] == previousD[Xt[i]]) {
+      thetadraw[Dt[i]] = -Inf
+      Dt[i]=which.max(thetadraw)
+    }
+    previousD[Xt[i]] = Dt[i]
+  }
+  
+  Dt
+}
+
+
+
+DtchoiceThompsonHierarchicalModified=function(Y,D,X, #outcomes, treatments, and covariates thus far
+                                      k,nx, #number of treatments and number of strata
+                                      Xt, # covariates for period t
+                                      RR){ #number of replication draws
+  
+  N_Xt=table(Xt) #count of covariate cells
+  Nt=length(Xt)
+  Dt=rep(0,Nt)
+  
+  # Repeat Hierarchical Thompson sampling RR times for Xt
+  XtRR=rep(Xt,RR)
+  DtRR=DtchoiceThompsonHierarchicalAlternating(Y,D,X,k,nx,XtRR)
+  N_XtDt_average=table(list(X=XtRR,D=DtRR)) / RR #average count for each treatment value and covariate value, replicated sample
+  
+
+  #loop over each covariate value to get assignment vectors
+  for (x in 1:nx) {
+    N_xDt_floor=floor(N_XtDt_average[x,]) #average number of assignments, rounded down
+    Rem_xD = N_XtDt_average[x,] - N_xDt_floor #remainder
+    n_Rem= N_Xt[x] - sum(N_xDt_floor) #remaining number of units to be assigned
+    if (n_Rem> 0) {
+      Dtx= c(rep(1:k, N_xDt_floor), # assigning each treatment acoording to rounded down average count
+            sample(1:k,size=n_Rem,replace=T, prob=Rem_xD)) #remaining units assigned randomly from remain replicate assignments
+    } else {
+      Dtx= rep(1:k, N_xDt_floor)
+    }  
+    Dt[Xt==x] = sample(Dtx) #randomly permute
+  }
+  
+  
+  Dt
+}
+
 
 
 
@@ -163,88 +249,22 @@ StratifiedAssignment=function(X,k,nx){
 }
 
 
-# debug = function(){
-#   # simulate Y, D, X based on theta matrix
-#   N=1000
-#   k=3
-#   nx=5
-#   theta=matrix(runif(k*nx),k,nx)
-#   print("theta:")
-#   print(theta)
-# 
-#   D=sample(k,N,replace=TRUE)
-#   X=sample(nx,N,replace=TRUE)
-#   Y=SimulateY(theta, D, X)
-# 
-#   # test whether MLE works as intended
-#   SS=tapply(Y,list(D,X),sum) #matrix of successes
-#   NN=tapply(Y,list(D,X),length) #matrix of trials
-#   print("share successes:")
-#   print(SS/NN)
-# 
-#   MLE=betabinomialMLE(NN,SS)
-#   print("hyper parameter MLEs: ")
-#   print(MLE$AB)
-# 
-#   # test whether thetadraw works as intended
-#   thetadraw=hierarchicalPosteriorDraw(NN,SS,MLE$LLH)$theta
-#   print("posterior draw estimation error: ")
-#   print(theta-thetadraw)
-# 
-#   # test whether DtchoiceThompsonHierarchical works as intended
-#   Dt=DtchoiceThompsonHierarchical(Y,D,X,
-#                                k,nx, #number of treatments and number of strata
-#                                SimulateX(rep(1/nx,nx), 24))
-#   print("Thompson assignment:")
-#   print(Dt)
-# 
-# }
 
-#debug()
+DtchoiceCovariates=function(Y,D,X, #outcomes, treatments, and covariates thus far
+                            k,nx, #number of treatments and number of strata
+                            Xt, # covariates for period t
+                            method="stratified"){
+  if (method=="stratified") {
+    Dt=StratifiedAssignment(Xt,k,nx)
+  } else if (method=="random") {
+    Dt=StratifiedAssignment(X=rep(0,length(Xt)),1,nx)
+  } else if (method=="thompson") {
+    Dt=DtchoiceThompsonHierarchical(Y,D,k,Nt)
+  } else if (method=="modifiedthompson") {
+    Dt=DtchoiceThompsonHierarchicalModified(Y,D,k,Nt, RR=5)
+  } 
+  
+  Dt
+}  
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-#OLD VERSION WITH ARGUMENT Nt: 
-# DtchoiceThompsonHierarchical=function(Y,D,X, #outcomes, treatments, and covariates thus far
-#                                       k,nx, #number of treatments and number of strata
-#                                       Nt){ #vector of length nx of available units for each stratum
-#     
-#     SS=tapply(Y,list(D,X),sum) #matrix of successes
-#     NN=tapply(Y,list(D,X),length) #matrix of trials
-#     
-#     MLE=betabinomialMLE(NN,SS)
-#     
-#     #treat each treatment arm separate, thus the outer for loop
-#     #but set up hierarchical model across strata
-#     
-#     Dt=vector("list", nx)
-#     for (x in 1:nx) {
-#         Dt[[x]]=rep(0,Nt[x])
-#         
-#         for (i in 1:Nt[x]) {
-#             thetadraw=hierarchicalPosteriorDraw(NN,SS,MLE$LLH)$theta[,x]
-#             Dt[[x]][i]=which.max(thetadraw)
-#             if (i>1) {  #this step is modification of basic Thompson method
-#                 if (Dt[[x]][i] ==Dt[[x]][i-1]) {
-#                     thetadraw[Dt[[x]][i]] = -Inf
-#                     Dt[[x]][i]=which.max(thetadraw)
-#                 }
-#             }
-#             
-#         }
-#     }
-#     
-#     Dt
-# }
 

@@ -1,5 +1,4 @@
-library(ggplot2)
-library(ggthemes)
+#library(tidyverse)
 
 backcolor="azure2" #background color for plots
 
@@ -11,7 +10,12 @@ PlotSimplex=function(A,B,C,N){
   Uround=signif(USimplex$U+.0000001,digits=4)
   USimplex$maximizer=(Uround==max(Uround))
   USimplex$fontf=sapply(USimplex$maximizer, function(l) (if (l) "bold" else "plain"))
-  
+
+  plotTitle=bquote(alpha ~" = (" ~ 
+                       .(paste(A, collapse=", ")) ~ 
+                       "), "  ~ beta ~ " = ("  ~
+                       .(paste(B, collapse=", ")) ~ 
+                       ")")      
   ggplot(USimplex, aes(x=as.integer(n1), y=as.integer(n2), z=U)) +
     geom_tile(aes(fill = U))  + 
     scale_fill_gradient( low = "skyblue4", high = "white") +
@@ -23,8 +27,10 @@ PlotSimplex=function(A,B,C,N){
     xlab(expression(n[1])) + ylab(expression(n[2])) +
     scale_x_continuous(breaks = 0:N) + scale_y_continuous(breaks = 0:N) +
     theme(panel.grid.minor = element_blank(),
-          panel.background = element_rect(fill = backcolor, colour = NA)) +
-    guides(fill=FALSE) 
+          panel.background = element_rect(fill = backcolor, colour = NA),
+          plot.title = element_text(hjust = 0.5)) +
+    guides(fill=FALSE) +
+    labs(title=plotTitle) 
 }
 
 
@@ -34,7 +40,7 @@ PlotSimplexAlternative=function(A,B,C,N){
   # can choose Uhat or U for Ufunction. If Uhat, need to Seed.
   # Seed(A,B)
   USimplex=UoverSimplex(A,B,C,N, U)
-  
+
   Uround=signif(USimplex$U+.0000001,digits=4)
   USimplex$maximizer=(Uround==max(Uround))
   USimplex$fontf=sapply(USimplex$maximizer, function(l) (if (l) "bold" else "plain"))
@@ -48,6 +54,13 @@ PlotSimplexAlternative=function(A,B,C,N){
                           n1=c(N+1, -.5, -.5),
                           n2=c(-.5, N+1, -.5))
   
+
+
+  plotTitle=bquote(alpha ~" = (" ~ 
+                    .(paste(A, collapse=", ")) ~ 
+                    "), "  ~ beta ~ " = ("  ~
+                   .(paste(B, collapse=", ")) ~ 
+                    ")")  
   ggplot(USimplex, aes(x=n1+sqrt(.25)*n2, y=sqrt(.75)*n2)) +
     geom_point(aes(color = U), size=sqrt(700/N))  + 
     scale_color_gradient( low = "skyblue4", high = "white") +
@@ -60,8 +73,12 @@ PlotSimplexAlternative=function(A,B,C,N){
               aes(label=txt),
               size= 15/N,
               show.legend=FALSE)  +
-    theme_void() + theme(legend.position="none", panel.background = element_rect(fill = backcolor, colour = NA)) +
-    coord_fixed(ratio = 1, xlim = c(-1.5,N+1.5), ylim=c(-1.5, sqrt(.75)*(N+1.5)))
+    theme_void() + 
+    theme(legend.position="none", 
+          panel.background = element_rect(fill = backcolor, colour = NA),
+          plot.title = element_text(hjust = 0.5)) +
+    coord_fixed(ratio = 1, xlim = c(-1.5,N+1.5), ylim=c(-1.5, sqrt(.75)*(N+1.5))) +
+    labs(title=plotTitle)
 }
 
 
@@ -82,12 +99,12 @@ SimplexPanel=function(N, alternativeplot=FALSE){
   for (i in 1:5) {
     if (!alternativeplot){
       PlotSimplex(AM[i,],BM[i,],C,N)
-      filename=paste(c("../../Figures/SimplexOrthogonal/ESWF_prior", AM[i,],"sample", N ,".pdf"), collapse="")
+      filename=paste(c("../Figures/SimplexOrthogonal/ESWF_prior", AM[i,],"sample", N ,".pdf"), collapse="")
     } else {
       PlotSimplexAlternative(AM[i,],BM[i,],C,N)
-      filename=paste(c("../../Figures/SimplexTriangle/ESWF_prior", AM[i,],"sample", N ,"Alternative.pdf"), collapse="")          
+      filename=paste(c("../Figures/SimplexTriangle/ESWF_prior", AM[i,],"sample", N ,"Alternative.pdf"), collapse="")          
     }
-    #ggsave(filename, width = 5, height = 4)
+    ggsave(filename, width = 5, height = 5)
   }
   
 }
@@ -95,7 +112,7 @@ SimplexPanel=function(N, alternativeplot=FALSE){
 
 OptimalPilot=function(A,B,C,M, parallel=TRUE){
   
-  pilot=data.frame(n1=0:M, Vn1=rep(0,M+1))
+  pilot=tibble(n1=0:M, Vn1=rep(0,M+1))
   
   if (parallel) {
     library(parallel)
@@ -112,9 +129,10 @@ OptimalPilot=function(A,B,C,M, parallel=TRUE){
   
   ggplot(pilot, aes(x=as.integer(n1), y=Vn1)) +
     geom_line(size=1, color= "skyblue4")+
-    xlab(expression(N[1])) + ylab("ESWF") +
+    xlab(expression(N[1])) + ylab(expression(V[0])) +
     scale_x_continuous(breaks = 0:M) +
+    theme_light() +
     theme(panel.grid.minor = element_blank(),
-          panel.background = element_rect(fill = backcolor, colour = NA),
+          #panel.background = element_rect(fill = backcolor, colour = NA),
           axis.line.x = element_line(size = 0.5, colour = "black"))
 }
